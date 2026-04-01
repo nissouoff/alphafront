@@ -97,6 +97,10 @@ const translations = {
     onboardingDesc4: "Visualisez et gérez toutes vos commandes depuis votre tableau de bord.",
     onboardingTitle5: "Commencez Maintenant",
     onboardingDesc5: "Cliquez sur le bouton + pour créer votre première page de vente ou boutique.",
+    onboarding2Title1: "Créez une Landing Page",
+    onboarding2Desc1: "Une page de vente pour un seul produit. Parfait pour les promotions et les lancements de produits.",
+    onboarding2Title2: "Ou créez une Boutique",
+    onboarding2Desc2: "Une boutique complète avec plusieurs produits, panier et gestion de stock.",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -183,6 +187,10 @@ const translations = {
     onboardingDesc4: "عرض وإدارة جميع طلباتك من لوحة التحكم.",
     onboardingTitle5: "ابدأ الآن",
     onboardingDesc5: "انقر على زر + لإنشاء صفحتك الأولى أو متجرك.",
+    onboarding2Title1: "أنشئ صفحة هبوط",
+    onboarding2Desc1: "صفحة بيع لمنتج واحد. مثالي للعروض والإطلاقات.",
+    onboarding2Title2: "أو أنشئ متجر كامل",
+    onboarding2Desc2: "متجر مع عدة منتجات وسلة وإدارة المخزون.",
   },
   en: {
     dashboard: "Dashboard",
@@ -269,6 +277,10 @@ const translations = {
     onboardingDesc4: "View and manage all your orders from your dashboard.",
     onboardingTitle5: "Get Started Now",
     onboardingDesc5: "Click the + button to create your first sales page or shop.",
+    onboarding2Title1: "Create a Landing Page",
+    onboarding2Desc1: "A sales page for a single product. Perfect for promotions and product launches.",
+    onboarding2Title2: "Or create a Full Shop",
+    onboarding2Desc2: "A complete shop with multiple products, cart and stock management.",
   },
 };
 
