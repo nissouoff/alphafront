@@ -883,41 +883,96 @@ export default function LandingDetailPage() {
 
             <div className={`${card} rounded-xl p-4 sm:p-6 border ${border}`}>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                <h3 className={`text-base sm:text-lg font-semibold ${text}`}>Graphique des ventes</h3>
-                <div className="flex gap-1 sm:gap-2">
-                  <button onClick={() => setGraphPeriod('day')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'day' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>7J</button>
-                  <button onClick={() => setGraphPeriod('month')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'month' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>6M</button>
-                  <button onClick={() => setGraphPeriod('year')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>5A</button>
-                </div>
+                <h3 className={`text-base sm:text-lg font-semibold ${text}`}>Statut des commandes</h3>
               </div>
               {orders.length === 0 ? (
-                <div className={`flex items-center justify-center h-32 sm:h-48 ${textMuted}`}>
-                  Aucune commande pour afficher le graphique
+                <div className={`flex items-center justify-center h-48 ${textMuted}`}>
+                  Aucune commande
                 </div>
               ) : (
-                <div className="flex items-end gap-1 sm:gap-3 h-32 sm:h-48">
-                  {graphData.map((data, idx) => {
-                    const heightPercent = maxOrders > 0 ? (data.orders / maxOrders) * 100 : 0;
-                    const barHeight = data.orders > 0 ? Math.max(heightPercent, 15) : 8;
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center">
-                        <div className="w-full flex flex-col items-center justify-end h-full gap-1 sm:gap-2">
-                          <div className="relative group">
-                            <div 
-                              className={`w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400 transition-all ${data.orders > 0 ? 'min-h-[8px]' : 'min-h-[4px] opacity-40'}`} 
-                              style={{ height: `${barHeight}%` }}
-                            ></div>
-                            {data.orders > 0 && (
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                {data.orders} commande{data.orders > 1 ? 's' : ''}
-                              </div>
-                            )}
-                          </div>
-                          <span className="text-[8px] sm:text-xs text-zinc-500">{data.label}</span>
-                        </div>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="relative">
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                      <circle cx="80" cy="80" r="60" fill="none" stroke="currentColor" strokeWidth="16" className="text-zinc-700 opacity-30" />
+                      {stats.total > 0 && (() => {
+                        const segments = [];
+                        let offset = 0;
+                        
+                        if (stats.pending > 0) {
+                          const pct = stats.pending / stats.total;
+                          segments.push({ pct, color: '#eab308', start: offset });
+                          offset += pct;
+                        }
+                        if (stats.processing > 0) {
+                          const pct = stats.processing / stats.total;
+                          segments.push({ pct, color: '#3b82f6', start: offset });
+                          offset += pct;
+                        }
+                        if (stats.paid > 0) {
+                          const pct = stats.paid / stats.total;
+                          segments.push({ pct, color: '#22c55e', start: offset });
+                          offset += pct;
+                        }
+                        if (stats.returned > 0) {
+                          const pct = stats.returned / stats.total;
+                          segments.push({ pct, color: '#f97316', start: offset });
+                        }
+                        
+                        const circumference = 2 * Math.PI * 60;
+                        
+                        return segments.map((seg, i) => (
+                          <circle
+                            key={i}
+                            cx="80"
+                            cy="80"
+                            r="60"
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth="16"
+                            strokeDasharray={`${seg.pct * circumference} ${circumference}`}
+                            strokeDashoffset={`${-seg.start * circumference}`}
+                            transform="rotate(-90 80 80)"
+                          />
+                        ));
+                      })()}
+                      <text x="80" y="75" textAnchor="middle" className={`fill-current ${text}`} fontSize="22" fontWeight="bold">{stats.total}</text>
+                      <text x="80" y="95" textAnchor="middle" className={`fill-current ${textMuted}`} fontSize="11">commandes</text>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {stats.pending > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <span className={`text-sm ${textMuted}`}>En attente</span>
+                        <span className={`font-semibold ${text}`}>{stats.pending}</span>
+                        <span className={`text-xs ${textMuted}`}>({Math.round((stats.pending / stats.total) * 100)}%)</span>
                       </div>
-                    );
-                  })}
+                    )}
+                    {stats.processing > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                        <span className={`text-sm ${textMuted}`}>Confirmées</span>
+                        <span className={`font-semibold ${text}`}>{stats.processing}</span>
+                        <span className={`text-xs ${textMuted}`}>({Math.round((stats.processing / stats.total) * 100)}%)</span>
+                      </div>
+                    )}
+                    {stats.paid > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                        <span className={`text-sm ${textMuted}`}>Payées</span>
+                        <span className={`font-semibold ${text}`}>{stats.paid}</span>
+                        <span className={`text-xs ${textMuted}`}>({Math.round((stats.paid / stats.total) * 100)}%)</span>
+                      </div>
+                    )}
+                    {stats.returned > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-orange-400"></div>
+                        <span className={`text-sm ${textMuted}`}>Retournées</span>
+                        <span className={`font-semibold ${text}`}>{stats.returned}</span>
+                        <span className={`text-xs ${textMuted}`}>({Math.round((stats.returned / stats.total) * 100)}%)</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
