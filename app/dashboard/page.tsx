@@ -14,38 +14,22 @@ export default function DashboardPage() {
   const { landings, orders, loading } = useDashboardData();
   const styles = getThemeClasses();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
-    const completed = localStorage.getItem('onboarding_completed');
+    const completed = localStorage.getItem("onboarding_completed");
     if (!completed) {
       setShowOnboarding(true);
     }
   }, []);
 
   const handleOnboardingComplete = () => {
-    localStorage.setItem('onboarding_completed', 'true');
-    setShowOnboarding(false);
-    setOnboardingCompleted(true);
-  };
-
-  const handleOnboardingClose = () => {
-    localStorage.setItem('onboarding_completed', 'true');
     setShowOnboarding(false);
   };
 
   const handleShowOnboarding = () => {
-    localStorage.removeItem('onboarding_completed');
+    localStorage.removeItem("onboarding_completed");
     setShowOnboarding(true);
   };
-
-  const onboardingSteps = [
-    { id: 'welcome', target: '.onboarding-welcome', title: t('onboardingTitle1'), description: t('onboardingDesc1'), position: 'bottom' as const },
-    { id: 'landings', target: '.onboarding-landings', title: t('onboardingTitle2'), description: t('onboardingDesc2'), position: 'bottom' as const },
-    { id: 'boutiques', target: '.onboarding-boutiques', title: t('onboardingTitle3'), description: t('onboardingDesc3'), position: 'bottom' as const },
-    { id: 'orders', target: '.onboarding-orders', title: t('onboardingTitle4'), description: t('onboardingDesc4'), position: 'bottom' as const },
-    { id: 'start', target: '.onboarding-start', title: t('onboardingTitle5'), description: t('onboardingDesc5'), position: 'right' as const },
-  ];
 
   const handleAction = (action: string) => {
     toast.success(`Fonctionnalité "${action}" en cours de développement !`);
@@ -75,12 +59,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Onboarding
-        steps={onboardingSteps}
-        isOpen={showOnboarding}
-        onClose={handleOnboardingClose}
-        onComplete={handleOnboardingComplete}
-      />
+      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
 
       <div className="flex items-center justify-between mb-4">
         <div></div>
@@ -98,7 +77,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         {stats.map((stat, index) => (
-          <div key={index} className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} ${index === 0 ? 'onboarding-welcome' : ''}`}>
+          <div key={index} className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <div className={`w-10 h-10 md:w-12 md:h-12 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-xl md:text-2xl`}>
                 {stat.icon}
@@ -111,7 +90,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} onboarding-landings`}>
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
             <Link href="/templates-landing" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
@@ -145,7 +124,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} onboarding-boutiques`}>
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("boutiques")}</h2>
             <Link href="/templates" className="px-3 md:px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
@@ -180,7 +159,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8 onboarding-start`}>
+      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8`}>
         <h2 className={`text-lg font-semibold ${styles.text} mb-6`}>{t("createNewProject")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link 

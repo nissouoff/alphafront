@@ -1,47 +1,68 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 
-interface OnboardingStep {
-  id: string;
-  target: string;
-  title: string;
-  description: string;
-  position: 'top' | 'bottom' | 'left' | 'right';
-}
-
 interface OnboardingProps {
-  steps: OnboardingStep[];
-  isOpen: boolean;
-  onClose: () => void;
   onComplete: () => void;
 }
 
-export default function Onboarding({ steps, isOpen, onClose, onComplete }: OnboardingProps) {
-  const { t } = useLanguage();
+export default function Onboarding({ onComplete }: OnboardingProps) {
+  const { t, language } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (isOpen && steps.length > 0) {
-      updateTargetPosition(steps[currentStep].target);
+    const completed = localStorage.getItem("onboarding_completed");
+    if (!completed) {
+      setTimeout(() => setIsVisible(true), 500);
     }
-  }, [isOpen, currentStep, steps]);
+  }, []);
 
-  const updateTargetPosition = (selector: string) => {
-    const element = document.querySelector(selector);
-    if (element) {
-      setTargetRect(element.getBoundingClientRect());
-    }
+  const steps = [
+    {
+      icon: "⚡",
+      title: t("onboardingTitle1"),
+      description: t("onboardingDesc1"),
+    },
+    {
+      icon: "📄",
+      title: t("onboardingTitle2"),
+      description: t("onboardingDesc2"),
+    },
+    {
+      icon: "🏪",
+      title: t("onboardingTitle3"),
+      description: t("onboardingDesc3"),
+    },
+    {
+      icon: "📦",
+      title: t("onboardingTitle4"),
+      description: t("onboardingDesc4"),
+    },
+    {
+      icon: "🚀",
+      title: t("onboardingTitle5"),
+      description: t("onboardingDesc5"),
+    },
+  ];
+
+  const handleComplete = () => {
+    localStorage.setItem("onboarding_completed", "true");
+    setIsVisible(false);
+    onComplete();
+  };
+
+  const handleSkip = () => {
+    localStorage.setItem("onboarding_completed", "true");
+    setIsVisible(false);
   };
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete();
+      handleComplete();
     }
   };
 
@@ -51,139 +72,111 @@ export default function Onboarding({ steps, isOpen, onClose, onComplete }: Onboa
     }
   };
 
-  const handleSkip = () => {
-    onClose();
-  };
-
-  if (!isOpen) return null;
+  if (!isVisible) return null;
 
   const step = steps[currentStep];
-  const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleSkip} />
-      
-      {targetRect && (
-        <div
-          className="absolute border-2 border-indigo-500 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] pointer-events-none transition-all duration-300"
-          style={{
-            top: targetRect.top - 8,
-            left: targetRect.left - 8,
-            width: targetRect.width + 16,
-            height: targetRect.height + 16,
-          }}
-        />
-      )}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={handleSkip} />
 
-      <div
-        ref={tooltipRef}
-        className="absolute bg-zinc-800 rounded-2xl shadow-2xl border border-zinc-700 p-5 w-80 md:w-96 z-10 animate-in fade-in zoom-in-95 duration-200"
-        style={{
-          top: targetRect ? getTooltipPosition(step.position, targetRect).top : '50%',
-          left: targetRect ? getTooltipPosition(step.position, targetRect).left : '50%',
-          transform: targetRect ? 'none' : 'translate(-50%, -50%)',
-        }}
-      >
-        <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-700 rounded-t-2xl overflow-hidden">
-          <div
-            className="h-full bg-indigo-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="mb-4 mt-2">
-          <span className="text-xs text-indigo-400 font-medium">
-            {currentStep + 1} / {steps.length}
-          </span>
-          <h3 className="text-lg font-bold text-white mt-1">{step.title}</h3>
-          <p className="text-sm text-zinc-400 mt-2">{step.description}</p>
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <button
-            onClick={handleSkip}
-            className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            {t('skip') || 'Passer'}
-          </button>
-          <div className="flex items-center gap-2">
-            {currentStep > 0 && (
-              <button
-                onClick={handlePrevious}
-                className="px-4 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors"
-              >
-                ←
-              </button>
-            )}
+      <div className={`relative w-full max-w-md transition-all duration-500 ${isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}>
+        <div className="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-3xl shadow-2xl border border-zinc-700/50 overflow-hidden">
+          <div className="relative h-48 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-white/20">
+              <div
+                className="h-full bg-white/60 transition-all duration-500 ease-out"
+                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              />
+            </div>
+            <div className="text-8xl animate-bounce">{step.icon}</div>
             <button
-              onClick={handleNext}
-              className="px-4 py-2 text-sm bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors flex items-center gap-2"
+              onClick={handleSkip}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
-              {currentStep === steps.length - 1 ? (
-                <>
-                  {t('finish') || 'Terminer'}
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </>
-              ) : (
-                <>
-                  {t('next') || 'Suivant'}
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-        </div>
 
-        <div className="flex justify-center gap-1.5 mt-4">
-          {steps.map((_, idx) => (
-            <div
-              key={idx}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                idx === currentStep ? 'bg-indigo-500' : 'bg-zinc-600'
-              }`}
-            />
-          ))}
+          <div className="p-8">
+            <div className="flex justify-center gap-2 mb-6">
+              {steps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === currentStep
+                      ? "w-8 bg-indigo-500"
+                      : idx < currentStep
+                      ? "w-2 bg-indigo-500/50"
+                      : "w-2 bg-zinc-700"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <h2 className="text-2xl font-bold text-white text-center mb-3">
+              {step.title}
+            </h2>
+            <p className="text-zinc-400 text-center mb-8 leading-relaxed">
+              {step.description}
+            </p>
+
+            <div className="flex items-center justify-between gap-4">
+              {currentStep > 0 ? (
+                <button
+                  onClick={handlePrevious}
+                  className="flex-1 py-3 px-6 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-white font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  {t("previous") || "Précédent"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleSkip}
+                  className="flex-1 py-3 px-6 rounded-xl bg-zinc-700 hover:bg-zinc-600 text-white font-medium transition-colors"
+                >
+                  {t("skip") || "Passer"}
+                </button>
+              )}
+
+              <button
+                onClick={handleNext}
+                className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25"
+              >
+                {currentStep === steps.length - 1 ? (
+                  <>
+                    {t("finish") || "Terminer"}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    {t("next") || "Suivant"}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="px-8 pb-6 flex justify-center">
+            <button
+              onClick={handleComplete}
+              className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
+            >
+              {language === "ar" ? "تم" : language === "en" ? "Done" : "Terminé"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
-}
-
-function getTooltipPosition(position: string, rect: DOMRect) {
-  const tooltipWidth = 384;
-  const tooltipHeight = 200;
-  const offset = 16;
-
-  switch (position) {
-    case 'top':
-      return {
-        top: rect.top - tooltipHeight - offset,
-        left: rect.left + rect.width / 2 - tooltipWidth / 2,
-      };
-    case 'bottom':
-      return {
-        top: rect.bottom + offset,
-        left: rect.left + rect.width / 2 - tooltipWidth / 2,
-      };
-    case 'left':
-      return {
-        top: rect.top + rect.height / 2 - tooltipHeight / 2,
-        left: rect.left - tooltipWidth - offset,
-      };
-    case 'right':
-      return {
-        top: rect.top + rect.height / 2 - tooltipHeight / 2,
-        left: rect.right + offset,
-      };
-    default:
-      return {
-        top: rect.bottom + offset,
-        left: rect.left + rect.width / 2 - tooltipWidth / 2,
-      };
-  }
 }
