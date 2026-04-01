@@ -21,6 +21,7 @@ const CATEGORY_TEMPLATES = {
         description: "Design moderne avec effets néon et animations fluides",
         preview: "/previews/cosmetic.png",
         previewUrl: "/template/cosmetic?preview=true",
+        bgPreview: "from-rose-100 via-pink-50 to-purple-50",
       },
     ],
   },
@@ -34,8 +35,9 @@ const CATEGORY_TEMPLATES = {
         id: "fashion",
         name: "Moderne",
         description: "Design contemporain pour marques de mode",
-        preview: "/template/fashion?preview=true",
+        preview: "/previews/fashion.png",
         previewUrl: "/template/fashion?preview=true",
+        bgPreview: "from-zinc-100 via-gray-50 to-zinc-100",
       },
     ],
   },
@@ -49,8 +51,9 @@ const CATEGORY_TEMPLATES = {
         id: "food",
         name: "Moderne",
         description: "Design vibrant pour restaurants",
-        preview: "/template/food?preview=true",
+        preview: "/previews/food.png",
         previewUrl: "/template/food?preview=true",
+        bgPreview: "from-orange-100 via-red-50 to-yellow-50",
       },
     ],
   },
@@ -64,8 +67,9 @@ const CATEGORY_TEMPLATES = {
         id: "tech",
         name: "Futuriste",
         description: "Design high-tech avec animations",
-        preview: "/template/tech?preview=true",
+        preview: "/previews/tech.png",
         previewUrl: "/template/tech?preview=true",
+        bgPreview: "from-blue-100 via-cyan-50 to-teal-50",
       },
     ],
   },
@@ -79,8 +83,9 @@ const CATEGORY_TEMPLATES = {
         id: "jewelry",
         name: "Élégant",
         description: "Design raffiné pour bijoux",
-        preview: "/template/jewelry?preview=true",
+        preview: "/previews/jewelry.png",
         previewUrl: "/template/jewelry?preview=true",
+        bgPreview: "from-amber-100 via-yellow-50 to-orange-50",
       },
     ],
   },
@@ -94,8 +99,9 @@ const CATEGORY_TEMPLATES = {
         id: "sport",
         name: "Dynamique",
         description: "Design énergique pour fitness",
-        preview: "/template/sport?preview=true",
+        preview: "/previews/sport.png",
         previewUrl: "/template/sport?preview=true",
+        bgPreview: "from-green-100 via-emerald-50 to-teal-50",
       },
     ],
   },
@@ -295,39 +301,36 @@ function TemplatesCategoryContent() {
                 
                 {/* Preview Content */}
                 <div className="absolute top-6 left-0 right-0 bottom-0 overflow-hidden">
-                  {template.previewUrl ? (
-                    <div className="w-full h-full bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center relative">
-                      {/* Mini Preview */}
-                      <div className="w-full h-full p-2 flex flex-col">
-                        {/* Header mini */}
-                        <div className="h-4 bg-white rounded-t flex items-center px-1 gap-1">
-                          <div className="w-3 h-3 bg-rose-400 rounded-full"></div>
-                          <div className="text-[6px] text-zinc-400 font-medium truncate">{template.name}</div>
-                        </div>
-                        {/* Hero mini */}
-                        <div className="flex-1 bg-white rounded-b flex items-center justify-center">
-                          <div className="text-center">
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${category.gradient} rounded-lg mx-auto mb-1 flex items-center justify-center`}>
-                              <span className="text-xs sm:text-sm">{category.emoji}</span>
+                  {template.preview ? (
+                    <div className="w-full h-full relative">
+                      <img 
+                        src={template.preview}
+                        alt={template.name}
+                        className="w-full h-full object-cover object-top"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.parentElement!.classList.add('bg-gradient-to-br', 'from-rose-100', 'to-amber-100');
+                          target.parentElement!.innerHTML = `
+                            <div class="w-full h-full flex items-center justify-center">
+                              <div class="text-center">
+                                <div class="w-12 h-12 bg-gradient-to-br ${category.gradient} rounded-xl mx-auto mb-2 flex items-center justify-center">
+                                  <span class="text-2xl">${category.emoji}</span>
+                                </div>
+                                <p class="text-zinc-600 text-xs font-medium">${template.name}</p>
+                              </div>
                             </div>
-                            <div className="w-10 sm:w-14 h-1.5 sm:h-2 bg-zinc-200 rounded mx-auto mb-1"></div>
-                            <div className="w-16 sm:w-20 h-1 bg-zinc-100 rounded mx-auto"></div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Gradient overlay */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-10`}></div>
+                          `;
+                        }}
+                      />
                     </div>
                   ) : (
-                    <>
-                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-50`}></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center">
-                          <span className="text-4xl sm:text-5xl md:text-6xl block mb-2">{category.emoji}</span>
-                          <span className="text-white/90 text-sm sm:text-base md:text-lg font-medium">{template.name}</span>
-                        </div>
+                    <div className={`w-full h-full bg-gradient-to-br ${template.bgPreview || category.gradient} opacity-50 flex items-center justify-center`}>
+                      <div className="text-center">
+                        <span className="text-5xl sm:text-6xl block mb-2">{category.emoji}</span>
+                        <span className="text-white/90 text-sm font-medium">{template.name}</span>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
 
