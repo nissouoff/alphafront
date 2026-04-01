@@ -90,10 +90,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} relative`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
-            <Link href="/templates-landing" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+            <Link href="/templates-landing" data-guide="create-landing-btn" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -159,7 +159,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8`}>
+      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8 relative`} data-guide="create-landing">
         <h2 className={`text-lg font-semibold ${styles.text} mb-6`}>{t("createNewProject")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link 
