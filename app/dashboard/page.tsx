@@ -5,31 +5,12 @@ import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { useDashboardData } from "./layout";
 import toast from "react-hot-toast";
-import { useState, useEffect } from "react";
-import Onboarding from "@/components/Onboarding";
 
 export default function DashboardPage() {
   const { getThemeClasses } = useTheme();
   const { t } = useLanguage();
   const { landings, orders, loading } = useDashboardData();
   const styles = getThemeClasses();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  useEffect(() => {
-    const completed = localStorage.getItem("onboarding_completed");
-    if (!completed) {
-      setShowOnboarding(true);
-    }
-  }, []);
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-  };
-
-  const handleShowOnboarding = () => {
-    localStorage.removeItem("onboarding_completed");
-    setShowOnboarding(true);
-  };
 
   const handleAction = (action: string) => {
     toast.success(`Fonctionnalité "${action}" en cours de développement !`);
@@ -59,22 +40,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
-
-      <div className="flex items-center justify-between mb-4">
-        <div></div>
-        <button
-          onClick={handleShowOnboarding}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg transition-colors"
-          title="Revoir le guide"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Guide
-        </button>
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         {stats.map((stat, index) => (
           <div key={index} className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
@@ -90,10 +55,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} relative`}>
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
-            <Link href="/templates-landing" data-guide="create-landing-btn" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2" data-guide="create-btn">
+            <Link href="/templates-landing" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -159,13 +124,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8 relative`} data-guide="create-landing">
+      <div className={`${styles.card} rounded-2xl p-6 border ${styles.border} mb-8`}>
         <h2 className={`text-lg font-semibold ${styles.text} mb-6`}>{t("createNewProject")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link 
             href="/templates-landing"
             className={`flex items-center gap-4 p-6 border-2 border-indigo-500 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors`}
-            data-guide="template-card"
           >
             <div className="w-16 h-16 bg-indigo-500 rounded-xl flex items-center justify-center">
               <span className="text-3xl">📄</span>
