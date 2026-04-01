@@ -8,6 +8,17 @@ import toast from "react-hot-toast";
 import { deleteLanding } from "@/lib/api";
 import { useDashboardData } from "../layout";
 
+const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+const navigateTo = (url: string) => {
+  if (isSafari) {
+    window.location.href = url;
+  } else {
+    const win = window.open();
+    if (win) win.location.href = url;
+  }
+};
+
 const ITEMS_PER_PAGE = 6;
 
 export default function BoutiquesPage() {
@@ -137,10 +148,7 @@ export default function BoutiquesPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 -webkit-tap-highlight-color-transparent">
                   <button
-                    onClick={() => {
-                      const win = window.open();
-                      if (win) win.location.href = `/dashboard/boutique/${boutique.id}`;
-                    }}
+                    onClick={() => navigateTo(`/dashboard/boutique/${boutique.id}`)}
                     className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer active:bg-purple-700"
                     title="Analytique"
                   >
@@ -151,10 +159,7 @@ export default function BoutiquesPage() {
                   </button>
                   {boutique.isPublished && (
                     <button
-                      onClick={() => {
-                        const win = window.open();
-                        if (win) win.location.href = `/shop/${boutique.slug}`;
-                      }}
+                      onClick={() => navigateTo(`/shop/${boutique.slug}`)}
                       className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-green-700"
                       title={t("view")}
                     >
