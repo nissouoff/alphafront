@@ -158,6 +158,8 @@ export default function OnboardingTour() {
       showProgress={false}
       disableOverlayClose={true}
       spotlightClicks={true}
+      disableScrolling={true}
+      hideBackButton={true}
       callback={handleJoyrideCallback}
       styles={{
         options: {
@@ -165,6 +167,7 @@ export default function OnboardingTour() {
           overlayColor: "rgba(0, 0, 0, 0.88)",
           spotlightShadow: "0 0 0 4px rgba(99, 102, 241, 1), 0 0 20px rgba(99, 102, 241, 0.5)",
           zIndex: 10000,
+          beaconSize: 0,
         },
         overlay: {
           backgroundColor: "rgba(0, 0, 0, 0.88)",
@@ -206,6 +209,11 @@ export default function OnboardingTour() {
         next: language === "ar" ? "التالي ←" : language === "en" ? "Next ←" : "Suivant ←",
         skip: "",
       }}
+      floaterProps={{
+        disableAnimation: true,
+        alwaysVisible: false,
+      }}
+      beaconComponent={() => null}
     />
   );
 }
