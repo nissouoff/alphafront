@@ -122,6 +122,7 @@ function TemplatesCategoryContent() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [landingName, setLandingName] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const category = CATEGORY_TEMPLATES[categoryId as keyof typeof CATEGORY_TEMPLATES] || CATEGORY_TEMPLATES.cosmetic;
 
@@ -173,17 +174,18 @@ function TemplatesCategoryContent() {
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       {/* Header */}
       <header className="border-b border-zinc-700/50 bg-zinc-900/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-white">ShopLaunch</span>
+            <span className="text-lg sm:text-xl font-bold text-white">ShopLaunch</span>
           </Link>
           
-          <nav className="flex items-center gap-6">
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-6">
             <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
               Dashboard
             </Link>
@@ -194,47 +196,91 @@ function TemplatesCategoryContent() {
               Boutiques
             </Link>
           </nav>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-white"
+          >
+            {mobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-zinc-700/50 px-4 py-4 space-y-3">
+            <Link 
+              href="/dashboard" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-zinc-400 hover:text-white transition-colors py-2"
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/templates-landing" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-white font-medium py-2"
+            >
+              Landing Pages
+            </Link>
+            <Link 
+              href="/templates" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-zinc-400 hover:text-white transition-colors py-2"
+            >
+              Boutiques
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-16">
         {/* Breadcrumb */}
-        <div className="mb-8">
-          <Link href="/templates-landing" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+        <div className="mb-6 sm:mb-8">
+          <Link href="/templates-landing" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm sm:text-base">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Tous les templates
+            <span className="hidden sm:inline">Tous les templates</span>
+            <span className="sm:hidden">Retour</span>
           </Link>
         </div>
 
         {/* Hero */}
-        <div className="text-center mb-16">
-          <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${category.gradient} rounded-full text-sm font-medium text-white mb-6`}>
-            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${category.gradient} rounded-full text-xs sm:text-sm font-medium text-white mb-4 sm:mb-6`}>
+            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></span>
             {category.templates.length} templates disponibles
           </div>
-          <div className={`w-20 h-20 bg-gradient-to-br ${category.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
-            <span className="text-4xl">{category.emoji}</span>
+          <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br ${category.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6`}>
+            <span className="text-2xl sm:text-3xl md:text-4xl">{category.emoji}</span>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-4 px-2">
             Templates <span className={`bg-gradient-to-r ${category.gradient} bg-clip-text text-transparent`}>{category.name}</span>
           </h1>
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-xl text-zinc-400 max-w-2xl mx-auto px-4">
             {category.description}
           </p>
         </div>
 
         {/* Templates Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {category.templates.map((template) => (
             <div 
               key={template.id}
-              className="group relative bg-zinc-800/50 rounded-3xl overflow-hidden border border-zinc-700/50 hover:border-rose-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-500/10"
+              className="group relative bg-zinc-800/50 rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-700/50 hover:border-rose-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-500/10"
             >
               {/* Preview Image */}
-              <div className="h-72 bg-zinc-700 relative">
+              <div className="h-40 sm:h-48 md:h-72 bg-zinc-700 relative">
                 {template.preview ? (
                   <img 
                     src={template.preview} 
@@ -246,16 +292,16 @@ function TemplatesCategoryContent() {
                   <>
                     <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-50`}></div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                        <span className="text-6xl block mb-2">{category.emoji}</span>
-                        <span className="text-white/90 text-lg font-medium">{template.name}</span>
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center">
+                        <span className="text-4xl sm:text-5xl md:text-6xl block mb-2">{category.emoji}</span>
+                        <span className="text-white/90 text-sm sm:text-base md:text-lg font-medium">{template.name}</span>
                       </div>
                     </div>
                   </>
                 )}
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                {/* Hover Overlay - Hidden on mobile */}
+                <div className="hidden md:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-4">
                   <button
                     onClick={() => handlePreview(template.previewUrl || template.preview)}
                     className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-white/30 transition-colors flex items-center gap-2"
@@ -270,15 +316,27 @@ function TemplatesCategoryContent() {
               </div>
 
               {/* Info */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2">{template.name}</h3>
-                <p className="text-zinc-400 text-sm mb-6">{template.description}</p>
+              <div className="p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">{template.name}</h3>
+                <p className="text-zinc-400 text-xs sm:text-sm mb-4 sm:mb-6">{template.description}</p>
                 
+                {/* Preview button - visible on mobile */}
+                <button
+                  onClick={() => handlePreview(template.previewUrl || template.preview)}
+                  className="md:hidden w-full py-2.5 mb-2 border border-zinc-600 text-zinc-300 font-medium rounded-xl hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Aperçu
+                </button>
+
                 <button
                   onClick={() => handleChoose(template.id)}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-gradient-to-r ${category.gradient} text-white hover:opacity-90`}
+                  className={`w-full py-2.5 sm:py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-gradient-to-r ${category.gradient} text-white hover:opacity-90 text-sm sm:text-base`}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                   Utiliser ce template
@@ -292,20 +350,20 @@ function TemplatesCategoryContent() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-800 rounded-3xl p-8 max-w-md w-full border border-zinc-700 shadow-2xl">
-            <div className="text-center mb-8">
-              <div className={`w-16 h-16 bg-gradient-to-br ${category.gradient} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                <span className="text-3xl">{category.emoji}</span>
+          <div className="bg-zinc-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 max-w-md w-full border border-zinc-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-6 sm:mb-8">
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br ${category.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}>
+                <span className="text-2xl sm:text-3xl">{category.emoji}</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
                 {category.templates.find(t => t.id === selectedTemplate)?.name}
               </h3>
-              <p className="text-zinc-400">
+              <p className="text-zinc-400 text-sm sm:text-base">
                 Entrez le nom de votre landing page
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Nom de la landing page
@@ -315,22 +373,22 @@ function TemplatesCategoryContent() {
                   value={landingName}
                   onChange={(e) => setLandingName(e.target.value)}
                   placeholder="Ex: Ma Boutique Cosmetique"
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-600 rounded-xl text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-600 rounded-xl text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 text-base"
                   autoFocus
                 />
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 border border-zinc-600 text-zinc-300 font-medium rounded-xl hover:bg-zinc-700 transition-colors"
+                  className="flex-1 py-3 border border-zinc-600 text-zinc-300 font-medium rounded-xl hover:bg-zinc-700 transition-colors text-sm sm:text-base"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={!landingName.trim() || creating}
-                  className={`flex-1 py-3 bg-gradient-to-r ${category.gradient} text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`flex-1 py-3 bg-gradient-to-r ${category.gradient} text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base`}
                 >
                   {creating ? (
                     <>
