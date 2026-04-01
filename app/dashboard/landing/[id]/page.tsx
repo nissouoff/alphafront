@@ -277,6 +277,10 @@ export default function LandingDetailPage() {
     };
   };
 
+  const formatPrice = (num: number) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === 'pending').length,
@@ -825,7 +829,7 @@ export default function LandingDetailPage() {
                   </div>
                   <span className="text-xs text-zinc-400">Revenus</span>
                 </div>
-                <p className={`text-lg sm:text-2xl font-bold text-green-400`}>{totalRevenue.toLocaleString()}</p>
+                <p className={`text-lg sm:text-2xl font-bold text-green-400`}>{formatPrice(totalRevenue)}</p>
                 <p className="text-[10px] sm:text-xs text-zinc-500">DA</p>
               </div>
             </div>
@@ -840,7 +844,7 @@ export default function LandingDetailPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Pertes</span>
                 </div>
-                <p className={`text-2xl sm:text-3xl font-bold text-red-400`}>{totalLoss.toLocaleString()} DA</p>
+                <p className={`text-2xl sm:text-3xl font-bold text-red-400`}>{formatPrice(totalLoss)} DA</p>
               </div>
               <div className={`${card} rounded-xl p-4 sm:p-5 border ${border}`}>
                 <div className="flex items-center gap-3 mb-2">
@@ -851,7 +855,7 @@ export default function LandingDetailPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Bénéfice Net</span>
                 </div>
-                <p className={`text-2xl sm:text-3xl font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{profit.toLocaleString()} DA</p>
+                <p className={`text-2xl sm:text-3xl font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatPrice(profit)} DA</p>
               </div>
             </div>
 
