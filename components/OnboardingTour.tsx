@@ -8,13 +8,17 @@ export default function OnboardingTour() {
   const { language } = useLanguage();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const completed = localStorage.getItem("joyride_completed");
     if (!completed) {
       setRun(true);
     }
   }, []);
+
+  if (!mounted) return null;
 
   const steps: Step[] = [
     {
