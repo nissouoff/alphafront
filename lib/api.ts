@@ -238,14 +238,23 @@ export async function getLanding(id: string): Promise<{ landing: Landing }> {
   return handleResponse(response);
 }
 
-export async function updateLanding(id: string, data: Partial<Landing>): Promise<{ landing: Landing; message: string }> {
+export async function updateLanding(id: string | null, data: Partial<Landing>): Promise<{ landing: Landing; message: string }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings/${id}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(data),
-  });
-  return handleResponse(response);
+  if (id) {
+    const response = await fetch(`${API_URL}/landings/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  } else {
+    const response = await fetch(`${API_URL}/landings`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  }
 }
 
 export async function deleteLanding(id: string): Promise<{ message: string }> {
