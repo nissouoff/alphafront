@@ -400,25 +400,23 @@ export default function LandingDetailPage() {
             {landing?.isPublished && (
               <button
                 onClick={() => navigateTo(`/shop/${landing.slug}`)}
-                className="px-2 sm:px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
+                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                title="Voir le site"
               >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span className="hidden sm:inline">Voir</span>
               </button>
             )}
             <Link 
               href={`/editor/${landing?.type}?id=${landingId}&type=landing`}
-              className="px-2 sm:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+              className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+              title="Modifier"
             >
-              <span className="hidden sm:inline">Modifier</span>
-              <span className="sm:hidden">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
             </Link>
           </div>
         </div>
@@ -488,46 +486,28 @@ export default function LandingDetailPage() {
                 <p className={textMuted}>Aucune commande trouvée</p>
               </div>
             ) : (
-              getFilteredOrders().map((order) => {
-                const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
-                return (
-                  <div
-                    key={order.id}
-                    onClick={() => setSelectedOrder(order)}
-                    className={`${card} rounded-xl p-3 sm:p-4 border ${order.status === 'pending' ? 'border-red-500/50' : border} cursor-pointer hover:border-indigo-500/50 transition-colors -webkit-tap-highlight-color-transparent active:bg-zinc-700`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0">
-                        {order.productPhoto ? (
-                          <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
-                          <span className={`px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                            {STATUS_LABELS[order.status as OrderStatus] || order.status}
-                          </span>
-                          <span className="text-[10px] sm:text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
+                {getFilteredOrders().map((order) => {
+                  return (
+                    <div
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all -webkit-tap-highlight-color-transparent active:scale-95 ${order.status === 'pending' ? 'ring-2 ring-red-500' : ''}`}
+                    >
+                      {order.productPhoto ? (
+                        <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                          <span className="text-2xl sm:text-3xl">📄</span>
                         </div>
-                        <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
-                        <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
-                          {order.customerName} {order.customer_firstname && `• ${order.customer_firstname}`} • {order.phone} • {order.wilaya}
-                        </p>
-                        <p className={`text-xs ${textMuted} sm:hidden truncate`}>
-                          {order.customerName} • {order.phone}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
-                        <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
-                        <p className={`text-[10px] ${textMuted} hidden sm:block`}>{formatDateTime(order.createdAt).time}</p>
-                      </div>
+                      )}
+                      {order.status === 'pending' && (
+                        <div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                      )}
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
         )}
@@ -543,7 +523,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">Vues</span>
+                  <span className="text-xs text-zinc-400">Vues</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold ${text}`}>{landing?.views || 0}</p>
               </div>
@@ -554,7 +534,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">Total</span>
+                  <span className="text-xs text-zinc-400">Total</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold ${text}`}>{stats.total}</p>
               </div>
@@ -565,7 +545,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">En attente</span>
+                  <span className="text-xs text-zinc-400">En attente</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-yellow-400`}>{stats.pending}</p>
               </div>
@@ -576,7 +556,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">Confirmées</span>
+                  <span className="text-xs text-zinc-400">Confirmées</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-blue-400`}>{stats.processing}</p>
               </div>
@@ -587,7 +567,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">Payées</span>
+                  <span className="text-xs text-zinc-400">Payées</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-green-400`}>{stats.paid}</p>
               </div>
@@ -598,7 +578,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400 hidden sm:block">Revenus</span>
+                  <span className="text-xs text-zinc-400">Revenus</span>
                 </div>
                 <p className={`text-lg sm:text-2xl font-bold text-green-400`}>{totalRevenue.toLocaleString()}</p>
                 <p className="text-[10px] sm:text-xs text-zinc-500">DA</p>
