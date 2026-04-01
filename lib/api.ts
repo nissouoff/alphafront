@@ -329,6 +329,7 @@ export async function createOrder(slug: string, data: OrderPayload): Promise<{ m
 export interface Order {
   id: string;
   landingSlug: string;
+  landingId?: string;
   landingName?: string;
   productId: string;
   productName: string;
