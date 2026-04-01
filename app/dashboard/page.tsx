@@ -40,48 +40,48 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         {stats.map((stat, index) => (
-          <div key={index} className={`${styles.card} rounded-2xl p-6 border ${styles.border}`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center text-2xl`}>
+          <div key={index} className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
+            <div className="flex items-center justify-between mb-2 md:mb-4">
+              <div className={`w-10 h-10 md:w-12 md:h-12 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-xl md:text-2xl`}>
                 {stat.icon}
               </div>
             </div>
-            <p className={`text-3xl font-bold ${styles.text} mb-1`}>{stat.value}</p>
-            <p className={styles.textMuted}>{stat.label}</p>
+            <p className={`text-xl md:text-2xl lg:text-3xl font-bold ${styles.text} mb-1`}>{stat.value}</p>
+            <p className={`text-xs md:text-sm ${styles.textMuted}`}>{stat.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className={`${styles.card} rounded-2xl p-6 border ${styles.border}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={`text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
-            <Link href="/templates-landing" className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+            <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
+            <Link href="/templates-landing" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              {t("create")}
+              <span className="hidden sm:inline">{t("create")}</span>
             </Link>
           </div>
           {landingPages.length === 0 ? (
-            <p className={`${styles.textMuted} text-center py-8`}>{t("noLanding")}</p>
+            <p className={`${styles.textMuted} text-center py-4 md:py-8`}>{t("noLanding")}</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {landingPages.slice(0, 3).map((landing) => (
-                <div key={landing.id} className={`flex items-center justify-between p-3 border ${styles.border} rounded-xl`}>
-                  <div>
-                    <p className={`font-medium ${styles.text}`}>{landing.name}</p>
-                    <p className={`text-sm ${styles.textMuted}`}>{landing.isPublished ? t("online") : t("offline")}</p>
+                <div key={landing.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border ${styles.border} rounded-xl`}>
+                  <div className="min-w-0">
+                    <p className={`font-medium ${styles.text} truncate`}>{landing.name}</p>
+                    <p className={`text-xs md:text-sm ${styles.textMuted}`}>{landing.isPublished ? t("online") : t("offline")}</p>
                   </div>
-                  <Link href={`/editor/landing?id=${landing.id}&template=${landing.type}`} className="px-3 py-1 bg-indigo-500/20 text-indigo-400 text-sm rounded-lg">
+                  <Link href={`/editor/landing?id=${landing.id}&template=${landing.type}`} className="px-3 py-1 bg-indigo-500/20 text-indigo-400 text-xs md:text-sm rounded-lg whitespace-nowrap">
                     {t("edit")}
                   </Link>
                 </div>
               ))}
               {landingPages.length > 3 && (
-                <Link href="/dashboard/landings" className={`block text-center ${styles.textMuted} text-sm hover:underline`}>
+                <Link href="/dashboard/landings" className={`block text-center ${styles.textMuted} text-xs md:text-sm hover:underline`}>
                   {t("seeAllLandings")} ({landingPages.length})
                 </Link>
               )}
@@ -89,24 +89,24 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className={`${styles.card} rounded-2xl p-6 border ${styles.border}`}>
+        <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={`text-lg font-semibold ${styles.text}`}>{t("boutiques")}</h2>
-            <Link href="/templates" className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+            <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("boutiques")}</h2>
+            <Link href="/templates" className="px-3 md:px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              {t("create")}
+              <span className="hidden sm:inline">{t("create")}</span>
             </Link>
           </div>
           {boutiques.length === 0 ? (
-            <p className={`${styles.textMuted} text-center py-8`}>{t("noBoutique")}</p>
+            <p className={`${styles.textMuted} text-center py-4 md:py-8`}>{t("noBoutique")}</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {boutiques.slice(0, 3).map((boutique) => (
-                <div key={boutique.id} className={`flex items-center justify-between p-3 border ${styles.border} rounded-xl`}>
-                  <div>
-                    <p className={`font-medium ${styles.text}`}>{boutique.name}</p>
+                <div key={boutique.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border ${styles.border} rounded-xl`}>
+                  <div className="min-w-0">
+                    <p className={`font-medium ${styles.text} truncate`}>{boutique.name}</p>
                     <p className={`text-sm ${styles.textMuted}`}>{boutique.isPublished ? t("online") : t("offline")}</p>
                   </div>
                   <Link href={`/editor/${boutique.type}?id=${boutique.id}&type=boutique`} className="px-3 py-1 bg-pink-500/20 text-pink-400 text-sm rounded-lg">

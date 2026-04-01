@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +35,7 @@ const CATEGORY_TEMPLATES = {
         name: "Moderne",
         description: "Design contemporain pour marques de mode",
         preview: "/template/fashion?preview=true",
+        previewUrl: "/template/fashion?preview=true",
       },
     ],
   },
@@ -49,6 +50,7 @@ const CATEGORY_TEMPLATES = {
         name: "Moderne",
         description: "Design vibrant pour restaurants",
         preview: "/template/food?preview=true",
+        previewUrl: "/template/food?preview=true",
       },
     ],
   },
@@ -63,6 +65,7 @@ const CATEGORY_TEMPLATES = {
         name: "Futuriste",
         description: "Design high-tech avec animations",
         preview: "/template/tech?preview=true",
+        previewUrl: "/template/tech?preview=true",
       },
     ],
   },
@@ -77,6 +80,7 @@ const CATEGORY_TEMPLATES = {
         name: "Élégant",
         description: "Design raffiné pour bijoux",
         preview: "/template/jewelry?preview=true",
+        previewUrl: "/template/jewelry?preview=true",
       },
     ],
   },
@@ -91,12 +95,25 @@ const CATEGORY_TEMPLATES = {
         name: "Dynamique",
         description: "Design énergique pour fitness",
         preview: "/template/sport?preview=true",
+        previewUrl: "/template/sport?preview=true",
       },
     ],
   },
 };
 
 export default function TemplatesCategoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+        <div className="animate-spin w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <TemplatesCategoryContent />
+    </Suspense>
+  );
+}
+
+function TemplatesCategoryContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('category') || 'cosmetic';
   const { user, loading } = useAuth();

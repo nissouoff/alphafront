@@ -51,6 +51,9 @@ interface Content {
   heroSubtitleSize: string;
   sectionBg: string;
   showReviews: boolean;
+  showStats: boolean;
+  satisfactionRate?: string;
+  clientsCount?: string;
 }
 
 interface LandingData {

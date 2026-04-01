@@ -30,6 +30,8 @@ interface LandingContent {
   sectionBg: string;
   showStats: boolean;
   showReviews: boolean;
+  satisfactionRate?: string;
+  clientsCount?: string;
 }
 
 const DEFAULT_CONTENT: LandingContent = {
