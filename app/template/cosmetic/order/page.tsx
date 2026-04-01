@@ -104,6 +104,7 @@ export default function OrderPage() {
         body: JSON.stringify({
           productName: product.name,
           productPrice: product.price,
+          productPhoto: productPhoto,
           customerName: formData.lastName,
           customer_firstname: formData.firstName,
           phone: formData.phone,
