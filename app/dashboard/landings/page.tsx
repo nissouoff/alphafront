@@ -96,7 +96,6 @@ export default function LandingsPage() {
         </div>
         <Link
           href="/templates-landing"
-          data-tour="landing-create-btn"
           className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
