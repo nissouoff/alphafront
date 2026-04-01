@@ -300,30 +300,31 @@ function TemplatesCategoryContent() {
                 </div>
                 
                 {/* Preview Content */}
-                <div className="absolute top-6 left-0 right-0 bottom-0 overflow-hidden">
+                <div className="absolute top-6 left-0 right-0 bottom-0 overflow-hidden flex items-center justify-center bg-zinc-100">
                   {template.preview ? (
-                    <div className="w-full h-full relative">
-                      <img 
-                        src={template.preview}
-                        alt={template.name}
-                        className="w-full h-full object-cover object-top"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement!.classList.add('bg-gradient-to-br', 'from-rose-100', 'to-amber-100');
-                          target.parentElement!.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center">
-                              <div class="text-center">
-                                <div class="w-12 h-12 bg-gradient-to-br ${category.gradient} rounded-xl mx-auto mb-2 flex items-center justify-center">
-                                  <span class="text-2xl">${category.emoji}</span>
-                                </div>
-                                <p class="text-zinc-600 text-xs font-medium">${template.name}</p>
+                    <img 
+                      src={template.preview}
+                      alt={template.name}
+                      className="max-w-full max-h-full object-contain"
+                      style={{ objectFit: 'contain' }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement!;
+                        parent.classList.remove('bg-zinc-100');
+                        parent.classList.add('bg-gradient-to-br', 'from-rose-100', 'to-amber-100');
+                        parent.innerHTML = `
+                          <div class="w-full h-full flex items-center justify-center">
+                            <div class="text-center">
+                              <div class="w-12 h-12 bg-gradient-to-br ${category.gradient} rounded-xl mx-auto mb-2 flex items-center justify-center">
+                                <span class="text-2xl">${category.emoji}</span>
                               </div>
+                              <p class="text-zinc-600 text-xs font-medium">${template.name}</p>
                             </div>
-                          `;
-                        }}
-                      />
-                    </div>
+                          </div>
+                        `;
+                      }}
+                    />
                   ) : (
                     <div className={`w-full h-full bg-gradient-to-br ${template.bgPreview || category.gradient} opacity-50 flex items-center justify-center`}>
                       <div className="text-center">
