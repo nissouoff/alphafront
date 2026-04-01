@@ -3,16 +3,10 @@
 import { useTheme } from "@/context/ThemeContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import { deleteLanding, getOrders, Order } from "@/lib/api";
 import { useDashboardData } from "../layout";
-
-const openInNewTab = (url: string) => {
-  if (typeof window !== 'undefined') {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
-};
 
 const ITEMS_PER_PAGE = 6;
 
@@ -143,7 +137,10 @@ export default function LandingsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 -webkit-tap-highlight-color-transparent">
                   <button
-                    onClick={() => openInNewTab(`/dashboard/landing/${landing.id}`)}
+                    onClick={() => {
+                      const win = window.open();
+                      if (win) win.location.href = `/dashboard/landing/${landing.id}`;
+                    }}
                     className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer active:bg-purple-700"
                     title="Analytique"
                   >
@@ -154,7 +151,10 @@ export default function LandingsPage() {
                   </button>
                   {landing.isPublished && (
                     <button
-                      onClick={() => openInNewTab(`/template/${landing.type}?id=${landing.id}`)}
+                      onClick={() => {
+                        const win = window.open();
+                        if (win) win.location.href = `/template/${landing.type}?id=${landing.id}`;
+                      }}
                       className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-green-700"
                       title={t("view")}
                     >
