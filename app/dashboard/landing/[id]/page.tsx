@@ -31,6 +31,17 @@ const textMuted = "text-zinc-400";
 const card = "bg-zinc-800";
 const border = "border-zinc-700";
 
+const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+const navigateTo = (url: string) => {
+  if (isSafari) {
+    window.location.href = url;
+  } else {
+    const win = window.open();
+    if (win) win.location.href = url;
+  }
+};
+
 export default function LandingDetailPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -48,6 +59,7 @@ export default function LandingDetailPage() {
   const [blockedClients, setBlockedClients] = useState<any[]>([]);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const [settingsForm, setSettingsForm] = useState({ name: '', slug: '', brandName: '' });
   const [savingSettings, setSavingSettings] = useState(false);
@@ -110,7 +122,6 @@ export default function LandingDetailPage() {
     }
   }, [landingId]);
 
-  // Poll for order updates every 5 seconds
   useEffect(() => {
     if (!landingId || !user) return;
     
@@ -367,63 +378,68 @@ export default function LandingDetailPage() {
   return (
     <div className={`min-h-screen ${bg}`}>
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 bg-red-500 text-white px-4 py-2 z-[200] flex items-center justify-center gap-2">
+        <div className="fixed top-0 left-0 right-0 bg-red-500 text-white px-4 py-2 z-[200] flex items-center justify-center gap-2 text-sm">
           Pas de connexion internet
         </div>
       )}
 
-      <header className={`${card} border-b ${border} px-6 py-4`}>
+      <header className={`${card} border-b ${border} px-4 py-3 sm:px-6 sm:py-4`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/dashboard/landings')} className={`p-2 hover:bg-zinc-700 rounded-lg ${textMuted}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <button onClick={() => router.push('/dashboard/landings')} className={`p-2 hover:bg-zinc-700 rounded-lg ${textMuted} flex-shrink-0`}>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <div>
-              <h1 className={`text-2xl font-bold ${text}`}>{landing?.name || 'Loading...'}</h1>
-              <p className={textMuted}>{landing?.type} • {landing?.isPublished ? 'En ligne' : 'Hors ligne'}</p>
+            <div className="min-w-0">
+              <h1 className={`text-lg sm:text-2xl font-bold ${text} truncate`}>{landing?.name || 'Loading...'}</h1>
+              <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>{landing?.type} • {landing?.isPublished ? 'En ligne' : 'Hors ligne'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {landing?.isPublished && (
               <button
-                onClick={() => window.open(`/shop/${landing.slug}`, '_blank')}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                onClick={() => navigateTo(`/shop/${landing.slug}`)}
+                className="px-2 sm:px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                Voir
+                <span className="hidden sm:inline">Voir</span>
               </button>
             )}
             <Link 
               href={`/editor/${landing?.type}?id=${landingId}&type=landing`}
-              className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-2 sm:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
             >
-              Modifier
+              <span className="hidden sm:inline">Modifier</span>
+              <span className="sm:hidden">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </span>
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="p-6">
-        <div className="flex gap-2 mb-6">
+      <div className="p-3 sm:p-6">
+        <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2 -webkit-tap-highlight-color-transparent">
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm ${
               activeTab === 'orders' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
             Commandes
             {stats.pending > 0 && (
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{stats.pending}</span>
+              <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium transition-colors whitespace-nowrap text-sm ${
               activeTab === 'analytics' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
@@ -431,7 +447,7 @@ export default function LandingDetailPage() {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium transition-colors whitespace-nowrap text-sm ${
               activeTab === 'settings' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
@@ -440,8 +456,8 @@ export default function LandingDetailPage() {
         </div>
 
         {activeTab === 'orders' && (
-          <div className="space-y-4">
-            <div className="flex gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="flex-1 relative">
                 <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -451,25 +467,24 @@ export default function LandingDetailPage() {
                   placeholder="Rechercher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm min-w-[120px]"
               >
                 <option value="all">Tous</option>
                 <option value="pending">En attente</option>
                 <option value="processing">Confirmée</option>
                 <option value="paid">Payée</option>
                 <option value="returned">Retournée</option>
-                <option value="deleted">Supprimée</option>
               </select>
             </div>
 
             {getFilteredOrders().length === 0 ? (
-              <div className={`${card} rounded-xl p-12 border ${border} text-center`}>
+              <div className={`${card} rounded-xl sm:rounded-2xl p-8 sm:p-12 border ${border} text-center`}>
                 <p className={textMuted}>Aucune commande trouvée</p>
               </div>
             ) : (
@@ -479,32 +494,35 @@ export default function LandingDetailPage() {
                   <div
                     key={order.id}
                     onClick={() => setSelectedOrder(order)}
-                    className={`${card} rounded-xl p-4 border ${order.status === 'pending' ? 'border-red-500/50' : border} cursor-pointer hover:border-indigo-500/50 transition-colors`}
+                    className={`${card} rounded-xl p-3 sm:p-4 border ${order.status === 'pending' ? 'border-red-500/50' : border} cursor-pointer hover:border-indigo-500/50 transition-colors -webkit-tap-highlight-color-transparent active:bg-zinc-700`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg sm:rounded-xl overflow-hidden flex-shrink-0">
                         {order.productPhoto ? (
                           <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl">📄</div>
+                          <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+                          <span className={`px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[10px] sm:text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
                             {STATUS_LABELS[order.status as OrderStatus] || order.status}
                           </span>
-                          <span className="text-xs text-zinc-500">#{order.id}</span>
+                          <span className="text-[10px] sm:text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
                         </div>
-                        <p className={`font-medium ${text} truncate`}>{order.productName}</p>
-                        <p className={`text-sm ${textMuted}`}>
+                        <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                        <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
                           {order.customerName} {order.customer_firstname && `• ${order.customer_firstname}`} • {order.phone} • {order.wilaya}
+                        </p>
+                        <p className={`text-xs ${textMuted} sm:hidden truncate`}>
+                          {order.customerName} • {order.phone}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className={`font-bold text-lg ${text}`}>{order.productPrice} DZD</p>
-                        <p className={`text-sm ${textMuted}`}>{formatDate(order.createdAt)}</p>
-                        <p className={`text-xs ${textMuted}`}>{formatDateTime(order.createdAt).time}</p>
+                        <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                        <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                        <p className={`text-[10px] ${textMuted} hidden sm:block`}>{formatDateTime(order.createdAt).time}</p>
                       </div>
                     </div>
                   </div>
@@ -515,80 +533,80 @@ export default function LandingDetailPage() {
         )}
 
         {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="space-y-3 sm:space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">Vues</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">Vues</span>
                 </div>
-                <p className={`text-3xl font-bold ${text}`}>{landing?.views || 0}</p>
+                <p className={`text-xl sm:text-3xl font-bold ${text}`}>{landing?.views || 0}</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">Total</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">Total</span>
                 </div>
-                <p className={`text-3xl font-bold ${text}`}>{stats.total}</p>
+                <p className={`text-xl sm:text-3xl font-bold ${text}`}>{stats.total}</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">En attente</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">En attente</span>
                 </div>
-                <p className={`text-3xl font-bold text-yellow-400`}>{stats.pending}</p>
+                <p className={`text-xl sm:text-3xl font-bold text-yellow-400`}>{stats.pending}</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">Confirmées</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">Confirmées</span>
                 </div>
-                <p className={`text-3xl font-bold text-blue-400`}>{stats.processing}</p>
+                <p className={`text-xl sm:text-3xl font-bold text-blue-400`}>{stats.processing}</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">Payées</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">Payées</span>
                 </div>
-                <p className={`text-3xl font-bold text-green-400`}>{stats.paid}</p>
+                <p className={`text-xl sm:text-3xl font-bold text-green-400`}>{stats.paid}</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`${card} rounded-xl p-3 sm:p-5 border ${border}`}>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-zinc-400">Revenus</span>
+                  <span className="text-xs text-zinc-400 hidden sm:block">Revenus</span>
                 </div>
-                <p className={`text-2xl font-bold text-green-400`}>{totalRevenue.toLocaleString()}</p>
-                <p className="text-xs text-zinc-500">DZD</p>
+                <p className={`text-lg sm:text-2xl font-bold text-green-400`}>{totalRevenue.toLocaleString()}</p>
+                <p className="text-[10px] sm:text-xs text-zinc-500">DA</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`${card} rounded-xl p-5 border ${border} bg-gradient-to-br from-red-500/10 to-red-600/5`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className={`${card} rounded-xl p-4 sm:p-5 border ${border} bg-gradient-to-br from-red-500/10 to-red-600/5`}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -597,9 +615,9 @@ export default function LandingDetailPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Pertes</span>
                 </div>
-                <p className={`text-3xl font-bold text-red-400`}>{totalLoss.toLocaleString()} DZD</p>
+                <p className={`text-2xl sm:text-3xl font-bold text-red-400`}>{totalLoss.toLocaleString()} DA</p>
               </div>
-              <div className={`${card} rounded-xl p-5 border ${border}`}>
+              <div className={`${card} rounded-xl p-4 sm:p-5 border ${border}`}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className={`w-10 h-10 ${profit >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'} rounded-lg flex items-center justify-center`}>
                     <svg className={`w-5 h-5 ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -608,27 +626,27 @@ export default function LandingDetailPage() {
                   </div>
                   <span className="text-sm text-zinc-400">Bénéfice Net</span>
                 </div>
-                <p className={`text-3xl font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{profit.toLocaleString()} DZD</p>
+                <p className={`text-2xl sm:text-3xl font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>{profit.toLocaleString()} DA</p>
               </div>
             </div>
 
-            <div className={`${card} rounded-xl p-6 border ${border}`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`text-lg font-semibold ${text}`}>Graphique des ventes</h3>
-                <div className="flex gap-2">
-                  <button onClick={() => setGraphPeriod('day')} className={`px-3 py-1 text-sm rounded-lg ${graphPeriod === 'day' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>7 Jours</button>
-                  <button onClick={() => setGraphPeriod('month')} className={`px-3 py-1 text-sm rounded-lg ${graphPeriod === 'month' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>6 Mois</button>
-                  <button onClick={() => setGraphPeriod('year')} className={`px-3 py-1 text-sm rounded-lg ${graphPeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>5 Ans</button>
+            <div className={`${card} rounded-xl p-4 sm:p-6 border ${border}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <h3 className={`text-base sm:text-lg font-semibold ${text}`}>Graphique des ventes</h3>
+                <div className="flex gap-1 sm:gap-2">
+                  <button onClick={() => setGraphPeriod('day')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'day' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>7J</button>
+                  <button onClick={() => setGraphPeriod('month')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'month' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>6M</button>
+                  <button onClick={() => setGraphPeriod('year')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>5A</button>
                 </div>
               </div>
-              <div className="flex items-end gap-3 h-48">
+              <div className="flex items-end gap-1 sm:gap-3 h-32 sm:h-48">
                 {graphData.map((data, idx) => {
                   const heightPercent = (data.orders / maxOrders) * 100;
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center">
-                      <div className="w-full flex flex-col items-center justify-end h-full gap-2">
-                        <div className={`w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400`} style={{ height: `${Math.max(heightPercent, data.orders > 0 ? 10 : 2)}%` }}></div>
-                        <span className="text-xs text-zinc-500">{data.label}</span>
+                      <div className="w-full flex flex-col items-center justify-end h-full gap-1 sm:gap-2">
+                        <div className={`w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400 min-h-[2px]`} style={{ height: `${Math.max(heightPercent, data.orders > 0 ? 10 : 2)}%` }}></div>
+                        <span className="text-[8px] sm:text-xs text-zinc-500">{data.label}</span>
                       </div>
                     </div>
                   );
@@ -639,21 +657,21 @@ export default function LandingDetailPage() {
         )}
 
         {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <div className={`${card} rounded-xl p-6 border ${border}`}>
-              <h3 className={`text-lg font-semibold ${text} mb-4`}>Informations</h3>
+          <div className="space-y-4 sm:space-y-6">
+            <div className={`${card} rounded-xl sm:rounded-2xl p-4 sm:p-6 border ${border}`}>
+              <h3 className={`text-base sm:text-lg font-semibold ${text} mb-4`}>Informations</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Nom</label>
-                  <input type="text" value={settingsForm.name} onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })} className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" value={settingsForm.name} onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">URL</label>
-                  <input type="text" value={settingsForm.slug} onChange={(e) => setSettingsForm({ ...settingsForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" value={settingsForm.slug} onChange={(e) => setSettingsForm({ ...settingsForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Nom de marque</label>
-                  <input type="text" value={settingsForm.brandName} onChange={(e) => setSettingsForm({ ...settingsForm, brandName: e.target.value })} className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" value={settingsForm.brandName} onChange={(e) => setSettingsForm({ ...settingsForm, brandName: e.target.value })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
                 </div>
                 <button onClick={handleSaveSettings} disabled={savingSettings} className={`w-full px-4 py-3 font-medium rounded-xl ${savingSettings ? 'bg-zinc-600 text-zinc-400' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}`}>
                   {savingSettings ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -662,17 +680,17 @@ export default function LandingDetailPage() {
               </div>
             </div>
 
-            <div className={`${card} rounded-xl p-6 border ${border}`}>
-              <h3 className={`text-lg font-semibold ${text} mb-4`}>Clients bloqués</h3>
+            <div className={`${card} rounded-xl sm:rounded-2xl p-4 sm:p-6 border ${border}`}>
+              <h3 className={`text-base sm:text-lg font-semibold ${text} mb-4`}>Clients bloqués</h3>
               {blockedClients.length === 0 ? <p className={textMuted}>Aucun client bloqué</p> : (
                 <div className="space-y-3">
                   {blockedClients.map((client, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-zinc-700/50 rounded-lg">
+                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-zinc-700/50 rounded-lg gap-2">
                       <div>
                         <p className="font-medium text-white">{client.phone}</p>
-                        <p className="text-sm text-zinc-400">{client.reason || 'Motif non spécifié'}</p>
+                        <p className="text-xs sm:text-sm text-zinc-400">{client.reason || 'Motif non spécifié'}</p>
                       </div>
-                      <button onClick={() => handleUnblock(client.phone)} className="px-3 py-1 text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg">Débloquer</button>
+                      <button onClick={() => handleUnblock(client.phone)} className="px-3 py-1.5 text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg">Débloquer</button>
                     </div>
                   ))}
                 </div>
@@ -683,28 +701,28 @@ export default function LandingDetailPage() {
       </div>
 
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setSelectedOrder(null)}>
-          <div className="bg-zinc-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-auto border border-zinc-700" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-zinc-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Commande #{selectedOrder.id}</h2>
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => setSelectedOrder(null)}>
+          <div className="bg-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-auto border border-zinc-700" onClick={e => e.stopPropagation()}>
+            <div className="p-4 sm:p-6 border-b border-zinc-700 flex items-center justify-between sticky top-0 bg-zinc-800">
+              <h2 className="text-lg sm:text-xl font-bold text-white">Commande #{selectedOrder.id?.slice(-6)}</h2>
               <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden">
-                  {selectedOrder.productPhoto ? <img src={selectedOrder.productPhoto} alt={selectedOrder.productName} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl">📄</div>}
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden">
+                  {selectedOrder.productPhoto ? <img src={selectedOrder.productPhoto} alt={selectedOrder.productName} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl">📄</div>}
                 </div>
                 <div>
-                  <p className="font-bold text-lg text-white">{selectedOrder.productName}</p>
-                  <p className="font-bold text-xl text-indigo-400">{selectedOrder.productPrice} DZD</p>
+                  <p className="font-bold text-base sm:text-lg text-white">{selectedOrder.productName}</p>
+                  <p className="font-bold text-lg sm:text-xl text-indigo-400">{selectedOrder.productPrice} DA</p>
                 </div>
               </div>
 
-              <div className="p-4 bg-zinc-700/50 rounded-xl">
-                <h3 className="font-semibold text-white mb-3">Client</h3>
-                <div className="space-y-2 text-sm">
+              <div className="p-3 sm:p-4 bg-zinc-700/50 rounded-xl">
+                <h3 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Client</h3>
+                <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <p><span className="text-zinc-400">Nom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
                   <p><span className="text-zinc-400">Prénom:</span> <span className="text-white">{selectedOrder.customer_firstname || '-'}</span></p>
                   <p><span className="text-zinc-400">Téléphone:</span> <span className="text-white">{selectedOrder.phone}</span></p>
@@ -718,13 +736,13 @@ export default function LandingDetailPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-white mb-3">Statut</h3>
+                <h3 className="font-semibold text-white mb-3 text-sm sm:text-base">Statut</h3>
                 <div className="flex flex-wrap gap-2">
                   {(Object.keys(STATUS_LABELS) as OrderStatus[])
                     .filter(status => status !== 'deleted')
                     .map(status => (
                     <button key={status} onClick={() => handleStatusUpdate(selectedOrder.id, status)} disabled={updatingStatus !== null}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${selectedOrder.status === status ? `${STATUS_COLORS[status].bg} ${STATUS_COLORS[status].text} border` : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'} ${updatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${selectedOrder.status === status ? `${STATUS_COLORS[status].bg} ${STATUS_COLORS[status].text} border` : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'} ${updatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       {STATUS_LABELS[status]}
                     </button>
                   ))}
@@ -732,39 +750,38 @@ export default function LandingDetailPage() {
               </div>
 
               {selectedOrder.status !== 'deleted' && (
-                <div className="pt-6 border-t border-zinc-700">
-                  <button onClick={() => handleDeleteOrder(selectedOrder.id)} className="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="pt-4 border-t border-zinc-700">
+                  <button onClick={() => handleDeleteOrder(selectedOrder.id)} className="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     Supprimer la commande
                   </button>
                 </div>
               )}
-
             </div>
           </div>
         </div>
       )}
 
       {showBlockModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
-          <div className="bg-zinc-800 rounded-2xl max-w-md w-full p-6 border border-zinc-700">
-            <h3 className="text-xl font-bold text-white mb-4">Confirmer le retour</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-400 mb-2">Prix de perte (DZD)</label>
-              <input type="number" value={returnLoss} onChange={(e) => setReturnLoss(e.target.value)} placeholder="Ex: 500" className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white" />
+        <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4">
+          <div className="bg-zinc-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 border border-zinc-700 max-h-[90vh] overflow-auto">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Confirmer le retour</h3>
+            <div className="mb-3 sm:mb-4">
+              <label className="block text-sm font-medium text-zinc-400 mb-2">Prix de perte (DA)</label>
+              <input type="number" value={returnLoss} onChange={(e) => setReturnLoss(e.target.value)} placeholder="Ex: 500" className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white text-sm" />
             </div>
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4">
               <label className="block text-sm font-medium text-zinc-400 mb-2">Motif de blocage</label>
-              <input type="text" value={blockReason} onChange={(e) => setBlockReason(e.target.value)} placeholder="Ex: Retour de marchandise" className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white" />
+              <input type="text" value={blockReason} onChange={(e) => setBlockReason(e.target.value)} placeholder="Ex: Retour de marchandise" className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-700 border border-zinc-600 rounded-xl text-white text-sm" />
             </div>
-            <p className="text-zinc-400 mb-4">Voulez-vous bloquer le client {selectedOrder.phone} ?</p>
-            <div className="flex gap-3">
-              <button onClick={() => handleBlockAndReturn(true)} className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl">Bloquer et retourner</button>
-              <button onClick={() => handleBlockAndReturn(false)} className="flex-1 px-4 py-3 bg-zinc-600 hover:bg-zinc-700 text-white font-medium rounded-xl">Retourner sans bloquer</button>
+            <p className="text-zinc-400 mb-3 sm:mb-4 text-sm">Voulez-vous bloquer le client {selectedOrder.phone} ?</p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button onClick={() => handleBlockAndReturn(true)} className="flex-1 px-4 py-2.5 sm:py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl text-sm">Bloquer et retourner</button>
+              <button onClick={() => handleBlockAndReturn(false)} className="flex-1 px-4 py-2.5 sm:py-3 bg-zinc-600 hover:bg-zinc-700 text-white font-medium rounded-xl text-sm">Retourner sans bloquer</button>
             </div>
-            <button onClick={() => { setShowBlockModal(false); setBlockReason(""); setReturnLoss(""); }} className="w-full mt-3 px-4 py-3 border border-zinc-600 text-zinc-400 hover:bg-zinc-700 rounded-xl">Annuler</button>
+            <button onClick={() => { setShowBlockModal(false); setBlockReason(""); setReturnLoss(""); }} className="w-full mt-2 sm:mt-3 px-4 py-2.5 sm:py-3 border border-zinc-600 text-zinc-400 hover:bg-zinc-700 rounded-xl text-sm">Annuler</button>
           </div>
         </div>
       )}
