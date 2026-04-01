@@ -68,6 +68,7 @@ export default function LandingDetailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [graphPeriod, setGraphPeriod] = useState<'day' | 'month' | 'year'>('month');
+  const [ordersView, setOrdersView] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -468,24 +469,46 @@ export default function LandingDetailPage() {
                   className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
               </div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm min-w-[120px]"
-              >
-                <option value="all">Tous</option>
-                <option value="pending">En attente</option>
-                <option value="processing">Confirmée</option>
-                <option value="paid">Payée</option>
-                <option value="returned">Retournée</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                >
+                  <option value="all">Tous</option>
+                  <option value="pending">En attente</option>
+                  <option value="processing">Confirmée</option>
+                  <option value="paid">Payée</option>
+                  <option value="returned">Retournée</option>
+                </select>
+                <div className="flex bg-zinc-800 border border-zinc-700 rounded-xl p-1">
+                  <button
+                    onClick={() => setOrdersView('grid')}
+                    className={`p-2 rounded-lg transition-colors ${ordersView === 'grid' ? 'bg-indigo-500 text-white' : 'text-zinc-400 hover:text-white'}`}
+                    title="Vue grille"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setOrdersView('list')}
+                    className={`p-2 rounded-lg transition-colors ${ordersView === 'list' ? 'bg-indigo-500 text-white' : 'text-zinc-400 hover:text-white'}`}
+                    title="Vue liste"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {getFilteredOrders().length === 0 ? (
               <div className={`${card} rounded-xl sm:rounded-2xl p-8 sm:p-12 border ${border} text-center`}>
                 <p className={textMuted}>Aucune commande trouvée</p>
               </div>
-            ) : (
+            ) : ordersView === 'grid' ? (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
                 {getFilteredOrders().map((order) => {
                   return (
@@ -504,6 +527,45 @@ export default function LandingDetailPage() {
                       {order.status === 'pending' && (
                         <div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                       )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-2 sm:space-y-3">
+                {getFilteredOrders().map((order) => {
+                  const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
+                  return (
+                    <div
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className={`${card} rounded-xl p-3 sm:p-4 border ${order.status === 'pending' ? 'border-red-500/50' : border} cursor-pointer hover:border-indigo-500/50 transition-colors -webkit-tap-highlight-color-transparent`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg overflow-hidden flex-shrink-0">
+                          {order.productPhoto ? (
+                            <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                              {STATUS_LABELS[order.status as OrderStatus] || order.status}
+                            </span>
+                            <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+                          </div>
+                          <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                          <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
+                            {order.customerName} • {order.phone} • {order.wilaya}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                          <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
