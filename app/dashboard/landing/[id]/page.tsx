@@ -25,11 +25,11 @@ const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string }> = {
   deleted: { bg: 'bg-red-500/20', text: 'text-red-400' },
 };
 
-const bg = "bg-zinc-900";
-const text = "text-white";
-const textMuted = "text-zinc-400";
-const card = "bg-zinc-800";
-const border = "border-zinc-700";
+const bg = "bg-[var(--theme-bg)]";
+const text = "text-[var(--theme-text)]";
+const textMuted = "text-[var(--theme-text-muted)]";
+const card = "bg-[var(--theme-card)]";
+const border = "border-[var(--theme-border)]";
 
 const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -378,28 +378,6 @@ export default function LandingDetailPage() {
 
   return (
     <div className={`min-h-screen ${bg}`}>
-      {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 bg-red-500 text-white px-4 py-2 z-[200] flex items-center justify-center gap-2 text-sm">
-          Pas de connexion internet
-        </div>
-      )}
-
-      <header className={`${card} border-b ${border} px-4 py-3 sm:px-6 sm:py-4`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <button onClick={() => router.push('/dashboard/landings')} className={`p-2 hover:bg-zinc-700 rounded-lg ${textMuted} flex-shrink-0`}>
-              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div className="min-w-0">
-              <h1 className={`text-lg sm:text-2xl font-bold ${text} truncate`}>{landing?.name || 'Loading...'}</h1>
-              <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>{landing?.type} • {landing?.isPublished ? 'En ligne' : 'Hors ligne'}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="p-3 sm:p-6">
         <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2 -webkit-tap-highlight-color-transparent">
           <button
