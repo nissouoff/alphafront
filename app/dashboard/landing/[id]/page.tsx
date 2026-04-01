@@ -509,67 +509,295 @@ export default function LandingDetailPage() {
                 <p className={textMuted}>Aucune commande trouvée</p>
               </div>
             ) : ordersView === 'grid' ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
-                {getFilteredOrders().map((order) => {
-                  return (
-                    <div
-                      key={order.id}
-                      onClick={() => setSelectedOrder(order)}
-                      className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all -webkit-tap-highlight-color-transparent active:scale-95 ${order.status === 'pending' ? 'ring-2 ring-red-500' : ''}`}
-                    >
-                      {order.productPhoto ? (
-                        <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                          <span className="text-2xl sm:text-3xl">📄</span>
-                        </div>
-                      )}
-                      {order.status === 'pending' && (
-                        <div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                      )}
+              <>
+                {getFilteredOrders().filter(o => o.status === 'pending').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                      <span className="text-sm font-medium text-yellow-400">En attente ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="space-y-2 sm:space-y-3">
-                {getFilteredOrders().map((order) => {
-                  const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
-                  return (
-                    <div
-                      key={order.id}
-                      onClick={() => setSelectedOrder(order)}
-                      className={`${card} rounded-xl p-3 sm:p-4 border ${order.status === 'pending' ? 'border-red-500/50' : border} cursor-pointer hover:border-indigo-500/50 transition-colors -webkit-tap-highlight-color-transparent`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+                      {getFilteredOrders().filter(o => o.status === 'pending').map((order) => (
+                        <div
+                          key={order.id}
+                          onClick={() => setSelectedOrder(order)}
+                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all -webkit-tap-highlight-color-transparent active:scale-95 ring-2 ring-yellow-400"
+                        >
                           {order.productPhoto ? (
                             <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                            <div className="w-full h-full bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
+                              <span className="text-2xl sm:text-3xl">📄</span>
+                            </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                              {STATUS_LABELS[order.status as OrderStatus] || order.status}
-                            </span>
-                            <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
-                          </div>
-                          <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
-                          <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
-                            {order.customerName} • {order.phone} • {order.wilaya}
-                          </p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
-                          <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'processing').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-blue-400">Confirmées ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+                      {getFilteredOrders().filter(o => o.status === 'processing').map((order) => (
+                        <div
+                          key={order.id}
+                          onClick={() => setSelectedOrder(order)}
+                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all -webkit-tap-highlight-color-transparent active:scale-95"
+                        >
+                          {order.productPhoto ? (
+                            <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                              <span className="text-2xl sm:text-3xl">📄</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'paid').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-green-400">Payées ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+                      {getFilteredOrders().filter(o => o.status === 'paid').map((order) => (
+                        <div
+                          key={order.id}
+                          onClick={() => setSelectedOrder(order)}
+                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-green-400 transition-all -webkit-tap-highlight-color-transparent active:scale-95"
+                        >
+                          {order.productPhoto ? (
+                            <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
+                              <span className="text-2xl sm:text-3xl">📄</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'returned').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-orange-400">Retournées ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
+                      {getFilteredOrders().filter(o => o.status === 'returned').map((order) => (
+                        <div
+                          key={order.id}
+                          onClick={() => setSelectedOrder(order)}
+                          className="relative aspect-square rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-orange-400 transition-all -webkit-tap-highlight-color-transparent active:scale-95"
+                        >
+                          {order.productPhoto ? (
+                            <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
+                              <span className="text-2xl sm:text-3xl">📄</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {getFilteredOrders().filter(o => o.status === 'pending').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
+                      <span className="text-sm font-medium text-yellow-400">En attente ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {getFilteredOrders().filter(o => o.status === 'pending').map((order) => {
+                        const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
+                        return (
+                          <div
+                            key={order.id}
+                            onClick={() => setSelectedOrder(order)}
+                            className={`${card} rounded-xl p-3 sm:p-4 border border-yellow-500/50 cursor-pointer hover:border-yellow-400 transition-colors -webkit-tap-highlight-color-transparent`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {order.productPhoto ? (
+                                  <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                  </span>
+                                  <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+                                </div>
+                                <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                                <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
+                                  {order.customerName} • {order.phone} • {order.wilaya}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                                <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'processing').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-blue-400">Confirmées ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {getFilteredOrders().filter(o => o.status === 'processing').map((order) => {
+                        const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
+                        return (
+                          <div
+                            key={order.id}
+                            onClick={() => setSelectedOrder(order)}
+                            className={`${card} rounded-xl p-3 sm:p-4 border ${border} cursor-pointer hover:border-blue-400 transition-colors -webkit-tap-highlight-color-transparent`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {order.productPhoto ? (
+                                  <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                  </span>
+                                  <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+                                </div>
+                                <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                                <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
+                                  {order.customerName} • {order.phone} • {order.wilaya}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                                <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'paid').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-green-400">Payées ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {getFilteredOrders().filter(o => o.status === 'paid').map((order) => {
+                        const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
+                        return (
+                          <div
+                            key={order.id}
+                            onClick={() => setSelectedOrder(order)}
+                            className={`${card} rounded-xl p-3 sm:p-4 border ${border} cursor-pointer hover:border-green-400 transition-colors -webkit-tap-highlight-color-transparent`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {order.productPhoto ? (
+                                  <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                  </span>
+                                  <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+                                </div>
+                                <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                                <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
+                                  {order.customerName} • {order.phone} • {order.wilaya}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                                <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {getFilteredOrders().filter(o => o.status === 'returned').length > 0 && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
+                      <span className="text-sm font-medium text-orange-400">Retournées ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {getFilteredOrders().filter(o => o.status === 'returned').map((order) => {
+                        const statusConfig = STATUS_COLORS[order.status as OrderStatus] || STATUS_COLORS.pending;
+                        return (
+                          <div
+                            key={order.id}
+                            onClick={() => setSelectedOrder(order)}
+                            className={`${card} rounded-xl p-3 sm:p-4 border ${border} cursor-pointer hover:border-orange-400 transition-colors -webkit-tap-highlight-color-transparent`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {order.productPhoto ? (
+                                  <img src={order.productPhoto} alt={order.productName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">📄</div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                  </span>
+                                  <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
+                                </div>
+                                <p className={`font-medium ${text} text-sm sm:text-base truncate`}>{order.productName}</p>
+                                <p className={`text-xs sm:text-sm ${textMuted} hidden sm:block`}>
+                                  {order.customerName} • {order.phone} • {order.wilaya}
+                                </p>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className={`font-bold text-base sm:text-lg ${text}`}>{order.productPrice} DA</p>
+                                <p className={`text-xs ${textMuted}`}>{formatDate(order.createdAt)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
