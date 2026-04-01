@@ -135,11 +135,11 @@ export default function BoutiquesPage() {
                   </span>
                   <span>{boutique.updatedAt ? new Date(boutique.updatedAt).toLocaleDateString('fr-FR') : 'N/A'}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 -webkit-tap-highlight-color-transparent">
                   <Link 
                     href={`/dashboard/boutique/${boutique.id}`}
                     target="_blank"
-                    className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
+                    className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer active:bg-purple-700"
                     title="Analytique"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +150,7 @@ export default function BoutiquesPage() {
                   {boutique.isPublished && (
                     <button
                       onClick={() => window.open(`/shop/${boutique.slug}`, '_blank')}
-                      className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
+                      className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-green-700"
                       title={t("view")}
                     >
                       {t("view")}
@@ -158,14 +158,14 @@ export default function BoutiquesPage() {
                   )}
                   <Link 
                     href={`/editor/${boutique.type}?id=${boutique.id}&type=boutique`}
-                    className="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-pink-700"
                   >
                     {t("edit")}
                   </Link>
                   <button
                     onClick={() => handleDelete(boutique.id)}
                     disabled={deleting === boutique.id}
-                    className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50 cursor-pointer active:bg-red-500/30"
                     title={t("delete")}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
