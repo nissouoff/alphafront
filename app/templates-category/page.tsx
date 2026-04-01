@@ -279,26 +279,57 @@ function TemplatesCategoryContent() {
               key={template.id}
               className="group relative bg-zinc-800/50 rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-700/50 hover:border-rose-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-500/10"
             >
-              {/* Preview Image */}
-              <div className="h-40 sm:h-48 md:h-72 bg-zinc-700 relative">
-                {template.preview ? (
-                  <img 
-                    src={template.preview} 
-                    alt={template.name}
-                    className="w-full h-full object-cover object-center"
-                    style={{ objectPosition: 'center top' }}
-                  />
-                ) : (
-                  <>
-                    <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-50`}></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center">
-                        <span className="text-4xl sm:text-5xl md:text-6xl block mb-2">{category.emoji}</span>
-                        <span className="text-white/90 text-sm sm:text-base md:text-lg font-medium">{template.name}</span>
-                      </div>
+              {/* Browser Preview Frame */}
+              <div className="h-40 sm:h-48 md:h-64 bg-zinc-700 relative">
+                {/* Browser Chrome */}
+                <div className="absolute top-0 left-0 right-0 h-6 bg-zinc-600 flex items-center px-2 gap-1.5 z-10">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                  <div className="flex-1 mx-2">
+                    <div className="bg-zinc-700 rounded px-2 py-0.5 text-[9px] text-zinc-300 truncate">
+                      localhost:3000/template/{template.id}
                     </div>
-                  </>
-                )}
+                  </div>
+                </div>
+                
+                {/* Preview Content */}
+                <div className="absolute top-6 left-0 right-0 bottom-0 overflow-hidden">
+                  {template.previewUrl ? (
+                    <div className="w-full h-full bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center relative">
+                      {/* Mini Preview */}
+                      <div className="w-full h-full p-2 flex flex-col">
+                        {/* Header mini */}
+                        <div className="h-4 bg-white rounded-t flex items-center px-1 gap-1">
+                          <div className="w-3 h-3 bg-rose-400 rounded-full"></div>
+                          <div className="text-[6px] text-zinc-400 font-medium truncate">{template.name}</div>
+                        </div>
+                        {/* Hero mini */}
+                        <div className="flex-1 bg-white rounded-b flex items-center justify-center">
+                          <div className="text-center">
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${category.gradient} rounded-lg mx-auto mb-1 flex items-center justify-center`}>
+                              <span className="text-xs sm:text-sm">{category.emoji}</span>
+                            </div>
+                            <div className="w-10 sm:w-14 h-1.5 sm:h-2 bg-zinc-200 rounded mx-auto mb-1"></div>
+                            <div className="w-16 sm:w-20 h-1 bg-zinc-100 rounded mx-auto"></div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Gradient overlay */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-10`}></div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-50`}></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center">
+                          <span className="text-4xl sm:text-5xl md:text-6xl block mb-2">{category.emoji}</span>
+                          <span className="text-white/90 text-sm sm:text-base md:text-lg font-medium">{template.name}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 {/* Hover Overlay - Hidden on mobile */}
                 <div className="hidden md:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-4">
