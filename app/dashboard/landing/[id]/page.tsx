@@ -331,12 +331,34 @@ export default function LandingDetailPage() {
     const now = new Date();
     const data: { label: string; orders: number; revenue: number }[] = [];
     
+    const getOrderDate = (order: Order) => {
+      if (!order.createdAt) return null;
+      try {
+        return new Date(order.createdAt);
+      } catch {
+        return null;
+      }
+    };
+    
+    const matchesDate = (order: Order, targetDate: Date, period: 'day' | 'month' | 'year') => {
+      const orderDate = getOrderDate(order);
+      if (!orderDate || isNaN(orderDate.getTime())) return false;
+      
+      if (period === 'day') {
+        return orderDate.toDateString() === targetDate.toDateString();
+      } else if (period === 'month') {
+        return orderDate.getFullYear() === targetDate.getFullYear() && 
+               orderDate.getMonth() === targetDate.getMonth();
+      } else {
+        return orderDate.getFullYear() === targetDate.getFullYear();
+      }
+    };
+    
     if (graphPeriod === 'day') {
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        const dayOrders = orders.filter(o => o.createdAt?.startsWith(dateStr));
+        const dayOrders = orders.filter(o => matchesDate(o, date, 'day'));
         data.push({
           label: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
           orders: dayOrders.length,
@@ -346,8 +368,7 @@ export default function LandingDetailPage() {
     } else if (graphPeriod === 'month') {
       for (let i = 5; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthStr = date.toISOString().substring(0, 7);
-        const monthOrders = orders.filter(o => o.createdAt?.startsWith(monthStr));
+        const monthOrders = orders.filter(o => matchesDate(o, date, 'month'));
         data.push({
           label: date.toLocaleDateString('fr-FR', { month: 'short' }),
           orders: monthOrders.length,
@@ -357,7 +378,8 @@ export default function LandingDetailPage() {
     } else {
       for (let i = 4; i >= 0; i--) {
         const year = now.getFullYear() - i;
-        const yearOrders = orders.filter(o => o.createdAt?.startsWith(String(year)));
+        const yearDate = new Date(year, 0, 1);
+        const yearOrders = orders.filter(o => matchesDate(o, yearDate, 'year'));
         data.push({
           label: String(year),
           orders: yearOrders.length,
@@ -868,19 +890,36 @@ export default function LandingDetailPage() {
                   <button onClick={() => setGraphPeriod('year')} className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg ${graphPeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}>5A</button>
                 </div>
               </div>
-              <div className="flex items-end gap-1 sm:gap-3 h-32 sm:h-48">
-                {graphData.map((data, idx) => {
-                  const heightPercent = (data.orders / maxOrders) * 100;
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center">
-                      <div className="w-full flex flex-col items-center justify-end h-full gap-1 sm:gap-2">
-                        <div className={`w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400 min-h-[2px]`} style={{ height: `${Math.max(heightPercent, data.orders > 0 ? 10 : 2)}%` }}></div>
-                        <span className="text-[8px] sm:text-xs text-zinc-500">{data.label}</span>
+              {orders.length === 0 ? (
+                <div className={`flex items-center justify-center h-32 sm:h-48 ${textMuted}`}>
+                  Aucune commande pour afficher le graphique
+                </div>
+              ) : (
+                <div className="flex items-end gap-1 sm:gap-3 h-32 sm:h-48">
+                  {graphData.map((data, idx) => {
+                    const heightPercent = maxOrders > 0 ? (data.orders / maxOrders) * 100 : 0;
+                    const barHeight = data.orders > 0 ? Math.max(heightPercent, 15) : 8;
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center">
+                        <div className="w-full flex flex-col items-center justify-end h-full gap-1 sm:gap-2">
+                          <div className="relative group">
+                            <div 
+                              className={`w-full rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400 transition-all ${data.orders > 0 ? 'min-h-[8px]' : 'min-h-[4px] opacity-40'}`} 
+                              style={{ height: `${barHeight}%` }}
+                            ></div>
+                            {data.orders > 0 && (
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-zinc-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                {data.orders} commande{data.orders > 1 ? 's' : ''}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[8px] sm:text-xs text-zinc-500">{data.label}</span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
