@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
+import { Joyride, Step, CallBackProps, STATUS } from "react-joyride";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface OnboardingTourProps {
