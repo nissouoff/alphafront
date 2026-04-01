@@ -5,8 +5,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
-import { deleteLanding, getOrders, Order } from "@/lib/api";
+import { deleteLanding } from "@/lib/api";
 import { useDashboardData } from "../layout";
+
+const openInNewTab = (url: string) => {
+  if (typeof window !== 'undefined') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+};
 
 const ITEMS_PER_PAGE = 6;
 
@@ -136,9 +142,8 @@ export default function BoutiquesPage() {
                   <span>{boutique.updatedAt ? new Date(boutique.updatedAt).toLocaleDateString('fr-FR') : 'N/A'}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 -webkit-tap-highlight-color-transparent">
-                  <Link 
-                    href={`/dashboard/boutique/${boutique.id}`}
-                    target="_blank"
+                  <button
+                    onClick={() => openInNewTab(`/dashboard/boutique/${boutique.id}`)}
                     className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer active:bg-purple-700"
                     title="Analytique"
                   >
@@ -146,10 +151,10 @@ export default function BoutiquesPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     Stats
-                  </Link>
+                  </button>
                   {boutique.isPublished && (
                     <button
-                      onClick={() => window.open(`/shop/${boutique.slug}`, '_blank')}
+                      onClick={() => openInNewTab(`/shop/${boutique.slug}`)}
                       className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-green-700"
                       title={t("view")}
                     >
