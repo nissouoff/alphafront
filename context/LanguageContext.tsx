@@ -77,6 +77,12 @@ const translations = {
     linkCopied: "Lien copié !",
     createFirstBoutique: "Créer ma première boutique",
     createFirstLanding: "Créer ma première landing page",
+    orders: "Commandes",
+    analytics: "Analytique",
+    settings: "Paramètres",
+    noOrderFound: "Aucune commande trouvée",
+    noOrders: "Aucune commande",
+    settingsSaved: "Paramètres sauvegardés !",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -143,6 +149,12 @@ const translations = {
     linkCopied: "تم نسخ الرابط!",
     createFirstBoutique: "إنشاء متجري الأول",
     createFirstLanding: "إنشاء صفحة الهبوط الأولى",
+    orders: "الطلبات",
+    analytics: "التحليلات",
+    settings: "الإعدادات",
+    noOrderFound: "لا توجد طلبات",
+    noOrders: "لا توجد طلبات",
+    settingsSaved: "تم حفظ الإعدادات!",
   },
   en: {
     dashboard: "Dashboard",
@@ -209,6 +221,12 @@ const translations = {
     linkCopied: "Link copied!",
     createFirstBoutique: "Create my first shop",
     createFirstLanding: "Create my first landing page",
+    orders: "Orders",
+    analytics: "Analytics",
+    settings: "Settings",
+    noOrderFound: "No orders found",
+    noOrders: "No orders",
+    settingsSaved: "Settings saved!",
   },
 };
 

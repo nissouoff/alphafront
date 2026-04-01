@@ -287,7 +287,7 @@ export default function SettingsPage() {
                         : `${border} hover:border-[var(--theme-button)]`
                     }`}
                   >
-                    <p className={`text-2xl mb-2`}>🇩🇿</p>
+                    <p className={`text-2xl mb-2`}>🇫🇷</p>
                     <p className={`font-medium ${text}`}>Français</p>
                   </button>
 

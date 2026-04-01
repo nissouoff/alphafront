@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,14 +9,6 @@ import { getLanding, Landing, Order, updateOrderStatus, updateLanding, deleteOrd
 import toast from "react-hot-toast";
 
 type OrderStatus = 'pending' | 'processing' | 'paid' | 'returned' | 'deleted';
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'En attente',
-  processing: 'Confirmée',
-  paid: 'Payée',
-  returned: 'Retournée',
-  deleted: 'Supprimée',
-};
 
 const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string }> = {
   pending: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
@@ -44,9 +37,21 @@ const navigateTo = (url: string) => {
 
 export default function LandingDetailPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const params = useParams();
   const landingId = params.id as string;
+
+  const getStatusLabel = (status: OrderStatus) => {
+    switch (status) {
+      case 'pending': return t('pending');
+      case 'processing': return t('processing');
+      case 'paid': return t('paid');
+      case 'returned': return t('returned');
+      case 'deleted': return t('deleted');
+      default: return status;
+    }
+  };
   
   const [landing, setLanding] = useState<Landing | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -231,7 +236,7 @@ export default function LandingDetailPage() {
         content: { ...prev.content, brandName: settingsForm.brandName }
       } : null);
       setSettingsSuccess(true);
-      toast.success("Paramètres sauvegardés");
+      toast.success(t("settingsSaved"));
       setTimeout(() => setSettingsSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -412,7 +417,7 @@ export default function LandingDetailPage() {
               activeTab === 'orders' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
-            Commandes
+            {t('orders')}
             {stats.pending > 0 && (
               <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{stats.pending}</span>
             )}
@@ -423,7 +428,7 @@ export default function LandingDetailPage() {
               activeTab === 'analytics' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
-            Analytique
+            {t('analytics')}
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -431,7 +436,7 @@ export default function LandingDetailPage() {
               activeTab === 'settings' ? 'bg-indigo-500 text-white' : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
             }`}
           >
-            Paramètres
+            {t('settings')}
           </button>
         </div>
 
@@ -457,8 +462,8 @@ export default function LandingDetailPage() {
                   className="px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 >
                   <option value="all">Tous</option>
-                  <option value="pending">En attente</option>
-                  <option value="processing">Confirmée</option>
+                  <option value="pending">{t('pending')}</option>
+                  <option value="processing">{t('processing')}</option>
                   <option value="paid">Payée</option>
                   <option value="returned">Retournée</option>
                 </select>
@@ -487,7 +492,7 @@ export default function LandingDetailPage() {
 
             {getFilteredOrders().length === 0 ? (
               <div className={`${card} rounded-xl sm:rounded-2xl p-8 sm:p-12 border ${border} text-center`}>
-                <p className={textMuted}>Aucune commande trouvée</p>
+                <p className={textMuted}>{t('noOrderFound')}</p>
               </div>
             ) : ordersView === 'grid' ? (
               <>
@@ -495,7 +500,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                      <span className="text-sm font-medium text-yellow-400">En attente ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
+                      <span className="text-sm font-medium text-yellow-400">{t('pending')} ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
                       {getFilteredOrders().filter(o => o.status === 'pending').map((order) => (
@@ -520,7 +525,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-blue-400">Confirmées ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
+                      <span className="text-sm font-medium text-blue-400">{t('processing')} ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
                       {getFilteredOrders().filter(o => o.status === 'processing').map((order) => (
@@ -545,7 +550,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-green-400">Payées ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
+                      <span className="text-sm font-medium text-green-400">{t('paid')} ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
                       {getFilteredOrders().filter(o => o.status === 'paid').map((order) => (
@@ -570,7 +575,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-orange-400">Retournées ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
+                      <span className="text-sm font-medium text-orange-400">{t('returned')} ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
                     </div>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
                       {getFilteredOrders().filter(o => o.status === 'returned').map((order) => (
@@ -598,7 +603,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                      <span className="text-sm font-medium text-yellow-400">En attente ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
+                      <span className="text-sm font-medium text-yellow-400">{t('pending')} ({getFilteredOrders().filter(o => o.status === 'pending').length})</span>
                     </div>
                     <div className="space-y-2">
                       {getFilteredOrders().filter(o => o.status === 'pending').map((order) => {
@@ -620,7 +625,7 @@ export default function LandingDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                    {getStatusLabel(order.status as OrderStatus)}
                                   </span>
                                   <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
                                 </div>
@@ -644,7 +649,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-blue-400">Confirmées ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
+                      <span className="text-sm font-medium text-blue-400">{t('processing')} ({getFilteredOrders().filter(o => o.status === 'processing').length})</span>
                     </div>
                     <div className="space-y-2">
                       {getFilteredOrders().filter(o => o.status === 'processing').map((order) => {
@@ -666,7 +671,7 @@ export default function LandingDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                    {getStatusLabel(order.status as OrderStatus)}
                                   </span>
                                   <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
                                 </div>
@@ -690,7 +695,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-green-400">Payées ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
+                      <span className="text-sm font-medium text-green-400">{t('paid')} ({getFilteredOrders().filter(o => o.status === 'paid').length})</span>
                     </div>
                     <div className="space-y-2">
                       {getFilteredOrders().filter(o => o.status === 'paid').map((order) => {
@@ -712,7 +717,7 @@ export default function LandingDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                    {getStatusLabel(order.status as OrderStatus)}
                                   </span>
                                   <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
                                 </div>
@@ -736,7 +741,7 @@ export default function LandingDetailPage() {
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
-                      <span className="text-sm font-medium text-orange-400">Retournées ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
+                      <span className="text-sm font-medium text-orange-400">{t('returned')} ({getFilteredOrders().filter(o => o.status === 'returned').length})</span>
                     </div>
                     <div className="space-y-2">
                       {getFilteredOrders().filter(o => o.status === 'returned').map((order) => {
@@ -758,7 +763,7 @@ export default function LandingDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
-                                    {STATUS_LABELS[order.status as OrderStatus]}
+                                    {getStatusLabel(order.status as OrderStatus)}
                                   </span>
                                   <span className="text-xs text-zinc-500">#{order.id?.slice(-6)}</span>
                                 </div>
@@ -816,7 +821,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400">En attente</span>
+                  <span className="text-xs text-zinc-400">{t('pending')}</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-yellow-400`}>{stats.pending}</p>
               </div>
@@ -827,7 +832,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400">Confirmées</span>
+                  <span className="text-xs text-zinc-400">{t('processing')}</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-blue-400`}>{stats.processing}</p>
               </div>
@@ -838,7 +843,7 @@ export default function LandingDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-xs text-zinc-400">Payées</span>
+                  <span className="text-xs text-zinc-400">{t('paid')}</span>
                 </div>
                 <p className={`text-xl sm:text-3xl font-bold text-green-400`}>{stats.paid}</p>
               </div>
@@ -887,7 +892,7 @@ export default function LandingDetailPage() {
               </div>
               {orders.length === 0 ? (
                 <div className={`flex items-center justify-center h-48 ${textMuted}`}>
-                  Aucune commande
+                  {t('noOrders')}
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -943,7 +948,7 @@ export default function LandingDetailPage() {
                     {stats.pending > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                        <span className={`text-sm ${textMuted}`}>En attente</span>
+                        <span className={`text-sm ${textMuted}`}>{t('pending')}</span>
                         <span className={`font-semibold ${text}`}>{stats.pending}</span>
                         <span className={`text-xs ${textMuted}`}>({Math.round((stats.pending / stats.total) * 100)}%)</span>
                       </div>
@@ -951,7 +956,7 @@ export default function LandingDetailPage() {
                     {stats.processing > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                        <span className={`text-sm ${textMuted}`}>Confirmées</span>
+                        <span className={`text-sm ${textMuted}`}>{t('processing')}</span>
                         <span className={`font-semibold ${text}`}>{stats.processing}</span>
                         <span className={`text-xs ${textMuted}`}>({Math.round((stats.processing / stats.total) * 100)}%)</span>
                       </div>
@@ -959,7 +964,7 @@ export default function LandingDetailPage() {
                     {stats.paid > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                        <span className={`text-sm ${textMuted}`}>Payées</span>
+                        <span className={`text-sm ${textMuted}`}>{t('paid')}</span>
                         <span className={`font-semibold ${text}`}>{stats.paid}</span>
                         <span className={`text-xs ${textMuted}`}>({Math.round((stats.paid / stats.total) * 100)}%)</span>
                       </div>
@@ -967,7 +972,7 @@ export default function LandingDetailPage() {
                     {stats.returned > 0 && (
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-orange-400"></div>
-                        <span className={`text-sm ${textMuted}`}>Retournées</span>
+                        <span className={`text-sm ${textMuted}`}>{t('returned')}</span>
                         <span className={`font-semibold ${text}`}>{stats.returned}</span>
                         <span className={`text-xs ${textMuted}`}>({Math.round((stats.returned / stats.total) * 100)}%)</span>
                       </div>
@@ -999,7 +1004,7 @@ export default function LandingDetailPage() {
                 <button onClick={handleSaveSettings} disabled={savingSettings} className={`w-full px-4 py-3 font-medium rounded-xl ${savingSettings ? 'bg-zinc-600 text-zinc-400' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}`}>
                   {savingSettings ? 'Sauvegarde...' : 'Sauvegarder'}
                 </button>
-                {settingsSuccess && <p className="text-green-400 text-sm text-center">Paramètres sauvegardés!</p>}
+                {settingsSuccess && <p className="text-green-400 text-sm text-center">{t('settingsSaved')}</p>}
               </div>
             </div>
 
@@ -1061,12 +1066,12 @@ export default function LandingDetailPage() {
               <div>
                 <h3 className="font-semibold text-white mb-3 text-sm sm:text-base">Statut</h3>
                 <div className="flex flex-wrap gap-2">
-                  {(Object.keys(STATUS_LABELS) as OrderStatus[])
+                  {(Object.keys(STATUS_COLORS) as OrderStatus[])
                     .filter(status => status !== 'deleted')
                     .map(status => (
                     <button key={status} onClick={() => handleStatusUpdate(selectedOrder.id, status)} disabled={updatingStatus !== null}
                       className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${selectedOrder.status === status ? `${STATUS_COLORS[status].bg} ${STATUS_COLORS[status].text} border` : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'} ${updatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {STATUS_LABELS[status]}
+                      {getStatusLabel(status)}
                     </button>
                   ))}
                 </div>
