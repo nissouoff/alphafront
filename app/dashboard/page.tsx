@@ -93,7 +93,7 @@ export default function DashboardPage() {
         <div className={`${styles.card} rounded-xl md:rounded-2xl p-4 md:p-6 border ${styles.border} relative`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-base md:text-lg font-semibold ${styles.text}`}>{t("landings")}</h2>
-            <Link href="/templates-landing" data-guide="create-landing-btn" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+            <Link href="/templates-landing" data-guide="create-landing-btn" className="px-3 md:px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg transition-colors flex items-center gap-2" data-guide="create-btn">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -165,6 +165,7 @@ export default function DashboardPage() {
           <Link 
             href="/templates-landing"
             className={`flex items-center gap-4 p-6 border-2 border-indigo-500 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors`}
+            data-guide="template-card"
           >
             <div className="w-16 h-16 bg-indigo-500 rounded-xl flex items-center justify-center">
               <span className="text-3xl">📄</span>
