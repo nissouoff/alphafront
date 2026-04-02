@@ -2,12 +2,43 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as 
 import { auth, db, saveUserToRTDB } from './firebase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const FETCH_TIMEOUT = 20000;
+const MAX_RETRIES = 3;
 
 interface ApiResponse<T = unknown> {
   message?: string;
   user?: T;
   token?: string;
   errors?: Record<string, string[]>;
+}
+
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = MAX_RETRIES): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    if (retries > 0 && (error.name === 'AbortError' || error.message.includes('fetch') || error.message.includes('network') || !navigator.onLine)) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    
+    if (error.name === 'AbortError') {
+      throw new Error('La connexion est lente. Veuillez patienter...');
+    }
+    if (error.message.includes('fetch') || error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      throw new Error('Problème de connexion. Vérifiez votre internet.');
+    }
+    throw error;
+  }
 }
 
 export interface FirebaseUser {
@@ -138,7 +169,7 @@ export async function uploadImage(file: File, folder: string = 'general'): Promi
     reader.readAsDataURL(file);
   });
 
-  const response = await fetch(`${API_URL}/upload`, {
+  const response = await fetchWithRetry(`${API_URL}/upload`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -218,7 +249,7 @@ export async function getLandings(type?: 'landing' | 'boutique' | 'all'): Promis
   if (type && type !== 'all') {
     url += `?type=${type}`;
   }
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: 'GET',
     headers,
   });
@@ -227,7 +258,7 @@ export async function getLandings(type?: 'landing' | 'boutique' | 'all'): Promis
 
 export async function createLanding(name: string, type: string, isLanding: boolean = true): Promise<{ landing: Landing; message: string } | any> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings`, {
+  const response = await fetchWithRetry(`${API_URL}/landings`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ name, type, isLanding }),
@@ -239,7 +270,7 @@ export async function createLanding(name: string, type: string, isLanding: boole
 
 export async function getLanding(id: string): Promise<{ landing: Landing }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings/${id}`, {
+  const response = await fetchWithRetry(`${API_URL}/landings/${id}`, {
     method: 'GET',
     headers,
   });
@@ -249,14 +280,14 @@ export async function getLanding(id: string): Promise<{ landing: Landing }> {
 export async function updateLanding(id: string | null, data: Partial<Landing>): Promise<{ landing: Landing; message: string }> {
   const headers = await getAuthHeaders();
   if (id) {
-    const response = await fetch(`${API_URL}/landings/${id}`, {
+    const response = await fetchWithRetry(`${API_URL}/landings/${id}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(data),
     });
     return handleResponse(response);
   } else {
-    const response = await fetch(`${API_URL}/landings`, {
+    const response = await fetchWithRetry(`${API_URL}/landings`, {
       method: 'POST',
       headers,
       body: JSON.stringify(data),
@@ -267,7 +298,7 @@ export async function updateLanding(id: string | null, data: Partial<Landing>): 
 
 export async function deleteLanding(id: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings/${id}`, {
+  const response = await fetchWithRetry(`${API_URL}/landings/${id}`, {
     method: 'DELETE',
     headers,
   });
@@ -276,7 +307,7 @@ export async function deleteLanding(id: string): Promise<{ message: string }> {
 
 export async function publishLanding(id: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings/${id}/publish`, {
+  const response = await fetchWithRetry(`${API_URL}/landings/${id}/publish`, {
     method: 'POST',
     headers,
   });
@@ -285,7 +316,7 @@ export async function publishLanding(id: string): Promise<{ message: string }> {
 
 export async function unpublishLanding(id: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/landings/${id}/unpublish`, {
+  const response = await fetchWithRetry(`${API_URL}/landings/${id}/unpublish`, {
     method: 'POST',
     headers,
   });
@@ -293,7 +324,7 @@ export async function unpublishLanding(id: string): Promise<{ message: string }>
 }
 
 export async function getPublicLanding(slug: string): Promise<{ landing: Landing }> {
-  const response = await fetch(`${API_URL}/shop/${slug}`, {
+  const response = await fetchWithRetry(`${API_URL}/shop/${slug}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -304,19 +335,19 @@ export async function getPublicLanding(slug: string): Promise<{ landing: Landing
 }
 
 export async function trackView(slug: string, ip?: string): Promise<void> {
-  await fetch(`${API_URL}/shop/${slug}/view`, {
+  await fetchWithRetry(`${API_URL}/shop/${slug}/view`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ip }),
-  });
+  }).catch(() => {});
 }
 
 export async function addReview(slug: string, name: string, rating: number, comment?: string): Promise<void> {
-  await fetch(`${API_URL}/shop/${slug}/review`, {
+  await fetchWithRetry(`${API_URL}/shop/${slug}/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, rating, comment }),
-  });
+  }).catch(() => {});
 }
 
 interface OrderPayload {
@@ -335,7 +366,7 @@ interface OrderPayload {
 }
 
 export async function createOrder(slug: string, data: OrderPayload): Promise<{ message: string; order: any }> {
-  const response = await fetch(`${API_URL}/shop/${slug}/order`, {
+  const response = await fetchWithRetry(`${API_URL}/shop/${slug}/order`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -376,7 +407,7 @@ export async function getOrders(limit?: number, landingSlug?: string): Promise<{
   if (landingSlug) params.append('landingSlug', landingSlug);
   if (params.toString()) url += `?${params.toString()}`;
   
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: 'GET',
     headers,
   });
@@ -395,7 +426,7 @@ export async function updateOrderStatus(
     if (returnLoss) body.returnLoss = returnLoss;
     if (blockReason) body.blockReason = blockReason;
     
-    const response = await fetch(`${API_URL}/orders/${orderId}/status`, {
+    const response = await fetchWithRetry(`${API_URL}/orders/${orderId}/status`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(body),
@@ -422,7 +453,7 @@ export async function updateOrderStatus(
 
 export async function deleteOrder(orderId: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/orders/${orderId}`, {
+  const response = await fetchWithRetry(`${API_URL}/orders/${orderId}`, {
     method: 'DELETE',
     headers,
   });
@@ -430,6 +461,6 @@ export async function deleteOrder(orderId: string): Promise<{ message: string }>
 }
 
 export async function getWilayas(): Promise<{ wilayas: string[] }> {
-  const response = await fetch(`${API_URL}/wilayas`);
+  const response = await fetchWithRetry(`${API_URL}/wilayas`);
   return handleResponse(response);
 }
