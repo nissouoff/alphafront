@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface Product {
@@ -61,7 +61,19 @@ interface LandingData {
   products: Product[];
 }
 
-export default function CosmeticTemplate() {
+export default function CosmeticTemplatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-amber-50">
+        <div className="animate-spin w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <CosmeticTemplate />
+    </Suspense>
+  );
+}
+
+function CosmeticTemplate() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
 

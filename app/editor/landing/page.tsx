@@ -32,6 +32,8 @@ interface LandingContent {
   showReviews: boolean;
   satisfactionRate?: string;
   clientsCount?: string;
+  showGuarantee: boolean;
+  guaranteeText?: string;
 }
 
 const DEFAULT_CONTENT: LandingContent = {
@@ -58,6 +60,8 @@ const DEFAULT_CONTENT: LandingContent = {
   sectionBg: 'bg-white',
   showStats: true,
   showReviews: true,
+  showGuarantee: false,
+  guaranteeText: 'Garantie 30 jours',
 };
 
 export default function LandingEditorPage() {
@@ -449,6 +453,31 @@ export default function LandingEditorPage() {
                       <span className="text-white font-medium">Afficher les commentaires clients</span>
                     </label>
                   </div>
+
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={content.showGuarantee || false}
+                        onChange={(e) => setContent(prev => ({ ...prev, showGuarantee: e.target.checked }))}
+                        className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5"
+                      />
+                      <span className="text-white font-medium">Afficher la garantie</span>
+                    </label>
+                  </div>
+
+                  {content.showGuarantee && (
+                    <div className="ml-8 bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">Texte de la garantie</label>
+                      <input
+                        type="text"
+                        value={content.guaranteeText || 'Garantie 30 jours'}
+                        onChange={(e) => setContent(prev => ({ ...prev, guaranteeText: e.target.value }))}
+                        placeholder="Ex: Garantie 30 jours"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-green-500 focus:outline-none text-sm"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
