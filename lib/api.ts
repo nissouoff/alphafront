@@ -68,6 +68,14 @@ export async function login(email: string, password: string): Promise<ApiRespons
     };
   } catch (error: any) {
     console.error('Login error:', error);
+    const errorCode = error.code || '';
+    
+    if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-email' || errorCode === 'auth/too-many-requests') {
+      throw new Error('Email ou mot de passe incorrect');
+    }
+    if (errorCode === 'auth/network-request-failed') {
+      throw new Error('Erreur de connexion réseau. Vérifiez votre connexion internet.');
+    }
     throw new Error(error.message || 'Identifiants incorrects');
   }
 }

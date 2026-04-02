@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Toaster } from "react-hot-toast";
 import { QueryProvider } from "@/providers/QueryProvider";
+import NetworkStatus from "@/components/NetworkStatus";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <NetworkStatus />
         <Toaster position="top-center" />
         <ThemeProvider>
           <LanguageProvider>
