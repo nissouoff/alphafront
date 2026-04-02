@@ -43,7 +43,7 @@ export default function RegisterPage() {
     try {
       await register(formData.name, formData.email, formData.password);
       toast.success("Inscription réussie !");
-      router.push("/dashboard");
+      router.push(`/login?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur d'inscription");
       toast.error(err instanceof Error ? err.message : "Erreur d'inscription");
