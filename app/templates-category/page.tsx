@@ -158,111 +158,8 @@ function useScaleIframe(containerRef: React.RefObject<HTMLDivElement | null>, if
   return scale;
 }
 
-function TemplatePreviewModal({ template, isOpen, onClose }: {
-  template: { id: string; name: string; previewUrl: string; description?: string } | null;
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const previewRef = useRef<HTMLDivElement>(null);
-  const scale = useScaleIframe(previewRef, 1200);
-
-  const handleOpenPreview = () => {
-    if (template) {
-      window.open(template.previewUrl, '_blank');
-      onClose();
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      {isOpen && template && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-8"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative w-full max-w-6xl bg-white rounded-3xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-rose-100 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">{template.name}</h3>
-                <p className="text-sm text-gray-500">{template.description}</p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-rose-100 rounded-full transition-colors"
-              >
-                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Preview Area */}
-            <div 
-              ref={previewRef}
-              className="relative bg-gray-100 overflow-hidden"
-              style={{ height: '60vh', minHeight: '400px' }}
-            >
-              <div 
-                className="absolute left-1/2 origin-top"
-                style={{
-                  transform: `translateX(-50%) scale(${scale})`,
-                  width: '1200px',
-                  height: '800px',
-                }}
-              >
-                <iframe
-                  src={`/api/template-html/${template.id}`}
-                  className="w-full h-full border-none bg-white"
-                  title={`Preview of ${template.name}`}
-                />
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="bg-white px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Preview en temps réel</span>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-5 py-2.5 border-2 border-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Fermer
-                </button>
-                <button
-                  onClick={handleOpenPreview}
-                  className="px-5 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full font-medium hover:shadow-lg hover:shadow-rose-500/30 transition-all flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  Ouvrir
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function TemplateCard({ template, onPreview, onSelect }: {
+function TemplateCard({ template, onSelect }: {
   template: { id: string; name: string; description: string; previewUrl: string; features?: string[] };
-  onPreview: (template: { id: string; name: string; previewUrl: string; description?: string }) => void;
   onSelect: (id: string) => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -315,18 +212,16 @@ function TemplateCard({ template, onPreview, onSelect }: {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center gap-4"
           >
-            <a
-              href={template.previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors shadow-xl"
+            <button
+              onClick={() => window.open(template.previewUrl, '_blank')}
+              className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors shadow-xl cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
               Aperçu
-            </a>
+            </button>
           </motion.div>
 
           {/* Badge */}
@@ -361,18 +256,16 @@ function TemplateCard({ template, onPreview, onSelect }: {
 
           {/* Buttons */}
           <div className="flex gap-3">
-            <a
-              href={template.previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center gap-2"
+            <button
+              onClick={() => window.open(template.previewUrl, '_blank')}
+              className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
               Aperçu
-            </a>
+            </button>
             <button
               onClick={() => onSelect(template.id)}
               className="flex-1 py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all flex items-center justify-center gap-2"
@@ -414,7 +307,6 @@ function TemplatesCategoryContent() {
   const [landingName, setLandingName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [previewingTemplate, setPreviewingTemplate] = useState<{ id: string; name: string; previewUrl: string; description?: string } | null>(null);
 
   const category = CATEGORY_TEMPLATES[categoryId as keyof typeof CATEGORY_TEMPLATES] || CATEGORY_TEMPLATES.cosmetic;
 
@@ -428,10 +320,6 @@ function TemplatesCategoryContent() {
       </div>
     );
   }
-
-  const handlePreview = (template: { id: string; name: string; previewUrl: string; description?: string }) => {
-    setPreviewingTemplate(template);
-  };
 
   const handleSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -606,7 +494,6 @@ function TemplatesCategoryContent() {
             <TemplateCard
               key={template.id}
               template={template}
-              onPreview={handlePreview}
               onSelect={handleSelect}
             />
           ))}
@@ -726,13 +613,6 @@ function TemplatesCategoryContent() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Preview Modal */}
-      <TemplatePreviewModal
-        template={previewingTemplate}
-        isOpen={!!previewingTemplate}
-        onClose={() => setPreviewingTemplate(null)}
-      />
 
       {/* Footer */}
       <footer className="py-12 mt-20 bg-white border-t border-rose-100">
