@@ -133,8 +133,8 @@ const cardVariants = {
   }
 };
 
-function useScaleIframe(containerRef: React.RefObject<HTMLDivElement | null>, iframeWidth = 1500) {
-  const [scale, setScale] = useState(0.5);
+function useScaleIframe(containerRef: React.RefObject<HTMLDivElement | null>, iframeWidth = 1200) {
+  const [scale, setScale] = useState(0.6);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -144,8 +144,8 @@ function useScaleIframe(containerRef: React.RefObject<HTMLDivElement | null>, if
       const width = container.clientWidth;
       const height = container.clientHeight;
       const scaleX = width / iframeWidth;
-      const scaleY = height / 1200;
-      setScale(Math.min(scaleX, scaleY, 1));
+      const scaleY = height / 900;
+      setScale(Math.min(scaleX, scaleY, 1) * 0.98);
     };
 
     updateScale();
@@ -283,7 +283,7 @@ function TemplateCard({ template, onPreview, onSelect }: {
         {/* Preview Area */}
         <div 
           ref={previewRef}
-          className="relative h-[400px] sm:h-[450px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+          className="relative h-[280px] sm:h-[350px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
         >
           {/* Decorative Elements */}
           <div className="absolute inset-0 overflow-hidden">
@@ -293,12 +293,11 @@ function TemplateCard({ template, onPreview, onSelect }: {
 
           {/* Scaled Preview */}
           <div 
-            className="absolute inset-0 transition-transform duration-300"
+            className="absolute left-1/2 origin-top transition-transform duration-300"
             style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: '1500px',
-              height: '1200px',
+              transform: `translateX(-50%) scale(${scale})`,
+              width: '1200px',
+              height: '900px',
             }}
           >
             <iframe
@@ -316,8 +315,10 @@ function TemplateCard({ template, onPreview, onSelect }: {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center gap-4"
           >
-            <button
-              onClick={() => onPreview(template)}
+            <a
+              href={template.previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors shadow-xl"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +326,7 @@ function TemplateCard({ template, onPreview, onSelect }: {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
               Aperçu
-            </button>
+            </a>
           </motion.div>
 
           {/* Badge */}
@@ -360,8 +361,10 @@ function TemplateCard({ template, onPreview, onSelect }: {
 
           {/* Buttons */}
           <div className="flex gap-3">
-            <button
-              onClick={() => onPreview(template)}
+            <a
+              href={template.previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,7 +372,7 @@ function TemplateCard({ template, onPreview, onSelect }: {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
               Aperçu
-            </button>
+            </a>
             <button
               onClick={() => onSelect(template.id)}
               className="flex-1 py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all flex items-center justify-center gap-2"
