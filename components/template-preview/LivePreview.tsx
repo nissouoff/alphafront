@@ -88,7 +88,7 @@ export function GlowLivePreview() {
         
         <motion.div
           animate={{ y: [-2, 2, -2] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 2, repeat: Infinity, ease: [0.45, 0, 0.55, 1] as const }}
           className="absolute top-8 right-2 px-2 py-0.5 bg-gradient-to-r from-rose-500 to-orange-500 rounded-full text-[6px] text-white font-bold shadow-lg z-30"
         >
           Glow ✨
@@ -362,7 +362,7 @@ export function JewelryLivePreview() {
           <div className="h-full flex flex-col items-center justify-center">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 20, repeat: Infinity, ease: [0, 0, 1, 1] as const }}
               className="w-12 h-12 border border-amber-300/50 rounded-full mb-1"
             />
             <div className="w-10 h-10 bg-gradient-to-br from-amber-200 via-yellow-200 to-amber-300 rounded-full flex items-center justify-center shadow-xl mb-2">
