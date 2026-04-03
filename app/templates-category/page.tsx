@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -12,91 +12,104 @@ import { motion, AnimatePresence } from "framer-motion";
 const CATEGORY_TEMPLATES = {
   cosmetic: {
     name: "Cosmétiques",
-    description: "Des landing pages élégantes pour produits de beauté et cosmétiques premium",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    description: "Des landing pages élégantes pour produits de beauté et cosmétiques premium. Designs modernes et conversions optimisées.",
+    gradient: "from-rose-400 via-pink-400 to-rose-500",
+    accentColor: "rose",
+    icon: "✨",
     templates: [
       {
         id: "cosmetic",
         name: "Glow",
         description: "Design moderne avec effets néon et animations fluides",
         previewUrl: "/template/cosmetic?preview=true",
+        features: ["Animations fluides", "Effets néon", "Conversion optimisée"],
       },
       {
         id: "skinova",
         name: "Skinova",
         description: "Design luxueux et élégant pour cosmétiques premium",
         previewUrl: "/template/skinova?preview=true",
+        features: ["Style luxe", "Typographie élégante", "Images plein écran"],
       },
     ],
   },
   fashion: {
     name: "Mode & Lifestyle",
     description: "Style épuré pour boutiques de mode",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    gradient: "from-pink-400 via-rose-400 to-pink-500",
+    accentColor: "pink",
+    icon: "👗",
     templates: [
       {
         id: "fashion",
-        name: "Moderne",
+        name: "Chic",
         description: "Design contemporain pour marques de mode",
         previewUrl: "/template/fashion?preview=true",
+        features: ["Grid élégant", "Galerie photos", "Lookbook"],
       },
     ],
   },
   food: {
     name: "Gastronomie",
     description: "Template appétissant pour restaurants et food",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    gradient: "from-amber-400 via-orange-400 to-amber-500",
+    accentColor: "amber",
+    icon: "🍽️",
     templates: [
       {
         id: "food",
-        name: "Moderne",
+        name: "Gourmet",
         description: "Design vibrant pour restaurants",
         previewUrl: "/template/food?preview=true",
+        features: ["Menu interactif", "Photos appétissantes", "Réservation"],
       },
     ],
   },
   tech: {
     name: "Tech & Innovation",
     description: "Design futuriste pour produits technologiques",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    gradient: "from-cyan-400 via-blue-400 to-cyan-500",
+    accentColor: "cyan",
+    icon: "🚀",
     templates: [
       {
         id: "tech",
-        name: "Futuriste",
+        name: "Nexus",
         description: "Design high-tech avec animations",
         previewUrl: "/template/tech?preview=true",
+        features: ["Animations futuristes", "Effets glassmorphism", "Dark mode"],
       },
     ],
   },
   jewelry: {
     name: "Bijoux & Luxe",
     description: "Élégance et raffinement pour bijoux",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    gradient: "from-yellow-400 via-amber-400 to-yellow-500",
+    accentColor: "amber",
+    icon: "💎",
     templates: [
       {
         id: "jewelry",
-        name: "Élégant",
+        name: "Prestige",
         description: "Design raffiné pour bijoux",
         previewUrl: "/template/jewelry?preview=true",
+        features: ["Style luxe", "Or et argent", "Galerie premium"],
       },
     ],
   },
   sport: {
     name: "Sport & Fitness",
     description: "Énergie et dynamisme pour sports",
-    gradient: "from-orange-500 via-orange-400 to-orange-600",
-    accentColor: "orange",
+    gradient: "from-emerald-400 via-green-400 to-emerald-500",
+    accentColor: "emerald",
+    icon: "💪",
     templates: [
       {
         id: "sport",
-        name: "Dynamique",
+        name: "FitPro",
         description: "Design énergique pour fitness",
         previewUrl: "/template/sport?preview=true",
+        features: ["Énergie haute", "Programmes", "Tracking"],
       },
     ],
   },
@@ -106,24 +119,53 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 }
   }
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 40, scale: 0.95 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }
+    scale: 1,
+    transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] as const }
   }
 };
 
+function useScaleIframe(containerRef: React.RefObject<HTMLDivElement | null>, iframeWidth = 1500) {
+  const [scale, setScale] = useState(0.5);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateScale = () => {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      const scaleX = width / iframeWidth;
+      const scaleY = height / 1200;
+      setScale(Math.min(scaleX, scaleY, 1));
+    };
+
+    updateScale();
+    const resizeObserver = new ResizeObserver(updateScale);
+    resizeObserver.observe(container);
+
+    return () => resizeObserver.disconnect();
+  }, [containerRef, iframeWidth]);
+
+  return scale;
+}
+
 function TemplatePreviewModal({ template, isOpen, onClose }: {
-  template: { id: string; name: string; previewUrl: string } | null;
+  template: { id: string; name: string; previewUrl: string; description?: string } | null;
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const previewRef = useRef<HTMLDivElement>(null);
+  const scale = useScaleIframe(previewRef, 1200);
+
   const handleOpenPreview = () => {
     if (template) {
       window.open(template.previewUrl, '_blank');
@@ -138,40 +180,76 @@ function TemplatePreviewModal({ template, isOpen, onClose }: {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-8"
           onClick={onClose}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-4xl bg-black rounded-2xl overflow-hidden border border-orange-500/30"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative w-full max-w-6xl bg-white rounded-3xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <iframe
-              src={`/api/template-html/${template.id}`}
-              className="w-full h-[600px] border-none"
-              title={`Preview of ${template.name}`}
-            />
-            <div className="p-6 bg-black border-t border-orange-500/30 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-white">
-                {template.name}
-              </h3>
-              <div className="flex gap-4">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b border-rose-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">{template.name}</h3>
+                <p className="text-sm text-gray-500">{template.description}</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-rose-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Preview Area */}
+            <div 
+              ref={previewRef}
+              className="relative bg-gray-100 overflow-hidden"
+              style={{ height: '60vh', minHeight: '400px' }}
+            >
+              <div 
+                className="absolute left-1/2 origin-top"
+                style={{
+                  transform: `translateX(-50%) scale(${scale})`,
+                  width: '1200px',
+                  height: '800px',
+                }}
+              >
+                <iframe
+                  src={`/api/template-html/${template.id}`}
+                  className="w-full h-full border-none bg-white"
+                  title={`Preview of ${template.name}`}
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-white px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Preview en temps réel</span>
+              </div>
+              <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className="px-6 py-2 border border-orange-500 text-orange-500 rounded-lg font-medium hover:bg-orange-500 hover:text-black transition-all"
+                  className="px-5 py-2.5 border-2 border-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors"
                 >
                   Fermer
                 </button>
                 <button
                   onClick={handleOpenPreview}
-                  className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-black rounded-lg font-bold hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full font-medium hover:shadow-lg hover:shadow-rose-500/30 transition-all flex items-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  Ouvrir dans un nouvel onglet
+                  Ouvrir
                 </button>
               </div>
             </div>
@@ -182,13 +260,14 @@ function TemplatePreviewModal({ template, isOpen, onClose }: {
   );
 }
 
-function TemplateCard({ template, category, onPreview, onSelect }: {
-  template: { id: string; name: string; description: string; previewUrl: string; previewImage?: string };
-  category: typeof CATEGORY_TEMPLATES.cosmetic;
-  onPreview: (template: { id: string; name: string; previewUrl: string }) => void;
+function TemplateCard({ template, onPreview, onSelect }: {
+  template: { id: string; name: string; description: string; previewUrl: string; features?: string[] };
+  onPreview: (template: { id: string; name: string; previewUrl: string; description?: string }) => void;
   onSelect: (id: string) => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const scale = useScaleIframe(previewRef, 1200);
 
   return (
     <motion.div
@@ -198,31 +277,48 @@ function TemplateCard({ template, category, onPreview, onSelect }: {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`
-        relative bg-black rounded-2xl overflow-hidden border border-orange-500/20
-        transition-all duration-500 ease-out
-        ${isHovered ? 'border-orange-500/50 shadow-lg shadow-orange-500/10' : ''}
+        relative bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-500 ease-out
+        ${isHovered ? 'shadow-2xl shadow-rose-500/10 -translate-y-2' : 'shadow-gray-200'}
       `}>
         {/* Preview Area */}
-        <div className="relative h-[320px] overflow-hidden bg-zinc-900">
-          {/* Live Preview - iFrame */}
-          <iframe
-            src={`/api/template-html/${template.id}`}
-            className="w-full h-full border-none transform scale-50 origin-top-left"
-            style={{ width: '200%', height: '200%' }}
-            title={`Preview of ${template.name}`}
-            loading="lazy"
-          />
+        <div 
+          ref={previewRef}
+          className="relative h-[400px] sm:h-[450px] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100"
+        >
+          {/* Decorative Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-rose-200/30 to-pink-200/30 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-rose-200/30 to-pink-200/30 rounded-full blur-3xl"></div>
+          </div>
+
+          {/* Scaled Preview */}
+          <div 
+            className="absolute inset-0 transition-transform duration-300"
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: '1500px',
+              height: '1200px',
+            }}
+          >
+            <iframe
+              src={`/api/template-html/${template.id}`}
+              className="w-full h-full border-none bg-white shadow-xl"
+              title={`Preview of ${template.name}`}
+              loading="lazy"
+            />
+          </div>
 
           {/* Hover Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center gap-4"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center gap-4"
           >
             <button
               onClick={() => onPreview(template)}
-              className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-black rounded-full font-bold hover:bg-orange-400 transition-colors shadow-lg shadow-orange-500/30"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-colors shadow-xl"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -233,24 +329,40 @@ function TemplateCard({ template, category, onPreview, onSelect }: {
           </motion.div>
 
           {/* Badge */}
-          <div className="absolute top-3 right-3 z-10">
-            <span className="px-3 py-1.5 bg-orange-500/90 backdrop-blur-sm rounded-full text-xs font-bold text-black shadow-lg">
+          <div className="absolute top-4 right-4">
+            <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-700 shadow-lg flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
               LIVE
             </span>
           </div>
+
+          {/* Gradient Fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
         </div>
 
         {/* Card Footer */}
-        <div className="p-5 bg-black border-t border-orange-500/20">
+        <div className="p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-white mb-1">{template.name}</h3>
-            <p className="text-sm text-zinc-400">{template.description}</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{template.name}</h3>
+            <p className="text-sm text-gray-500 line-clamp-2">{template.description}</p>
           </div>
 
+          {/* Features Tags */}
+          {template.features && (
+            <div className="flex flex-wrap gap-2 mb-5">
+              {template.features.slice(0, 3).map((feature, i) => (
+                <span key={i} className="px-2.5 py-1 bg-rose-50 text-rose-600 text-xs font-medium rounded-full">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Buttons */}
           <div className="flex gap-3">
             <button
               onClick={() => onPreview(template)}
-              className="flex-1 py-2.5 px-4 border-2 border-orange-500 text-orange-500 rounded-lg font-bold hover:bg-orange-500 hover:text-black transition-all flex items-center justify-center gap-2 text-sm"
+              className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -260,7 +372,7 @@ function TemplateCard({ template, category, onPreview, onSelect }: {
             </button>
             <button
               onClick={() => onSelect(template.id)}
-              className="flex-1 py-2.5 px-4 rounded-lg font-bold text-black shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-xl hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2 text-sm"
+              className="flex-1 py-3 px-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -277,8 +389,11 @@ function TemplateCard({ template, category, onPreview, onSelect }: {
 export default function TemplatesCategoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Chargement...</p>
+        </div>
       </div>
     }>
       <TemplatesCategoryContent />
@@ -296,22 +411,22 @@ function TemplatesCategoryContent() {
   const [landingName, setLandingName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [previewingTemplate, setPreviewingTemplate] = useState<{ id: string; name: string; previewUrl: string } | null>(null);
+  const [previewingTemplate, setPreviewingTemplate] = useState<{ id: string; name: string; previewUrl: string; description?: string } | null>(null);
 
   const category = CATEGORY_TEMPLATES[categoryId as keyof typeof CATEGORY_TEMPLATES] || CATEGORY_TEMPLATES.cosmetic;
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-400">Chargement...</p>
+          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Chargement...</p>
         </div>
       </div>
     );
   }
 
-  const handlePreview = (template: { id: string; name: string; previewUrl: string }) => {
+  const handlePreview = (template: { id: string; name: string; previewUrl: string; description?: string }) => {
     setPreviewingTemplate(template);
   };
 
@@ -341,47 +456,48 @@ function TemplatesCategoryContent() {
       } else {
         toast.error("Erreur lors de la création");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Erreur lors de la création");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erreur lors de la création";
+      toast.error(message);
     }
     setCreating(false);
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50">
       {/* Header */}
-      <header className="bg-black/90 backdrop-blur-xl border-b border-orange-500/20 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-rose-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link href="/dashboard" className="flex items-center gap-3 group">
+              <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:shadow-xl group-hover:shadow-rose-500/40 transition-all">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-white">ShopLaunch</span>
+              <span className="text-xl font-bold text-gray-900">ShopLaunch</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
                 Dashboard
               </Link>
-              <Link href="/templates-landing" className="text-sm text-orange-500 font-medium">
+              <Link href="/templates-landing" className="text-sm text-rose-500 font-semibold">
                 Landing Pages
               </Link>
-              <Link href="/templates" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              <Link href="/templates" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
                 Boutiques
               </Link>
             </nav>
 
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-orange-500/30">
+              <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-rose-500/30">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white"
+                className="md:hidden p-2 text-gray-600"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -391,10 +507,10 @@ function TemplatesCategoryContent() {
           </div>
 
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-orange-500/20 mt-4 pt-4 space-y-3">
-              <Link href="/dashboard" className="block text-zinc-400 hover:text-white py-2">Dashboard</Link>
-              <Link href="/templates-landing" className="block text-orange-500 font-medium py-2">Landing Pages</Link>
-              <Link href="/templates" className="block text-zinc-400 hover:text-white py-2">Boutiques</Link>
+            <div className="md:hidden border-t border-rose-100 mt-4 pt-4 space-y-3">
+              <Link href="/dashboard" className="block text-gray-600 hover:text-gray-900 py-2 font-medium">Dashboard</Link>
+              <Link href="/templates-landing" className="block text-rose-500 font-semibold py-2">Landing Pages</Link>
+              <Link href="/templates" className="block text-gray-600 hover:text-gray-900 py-2 font-medium">Boutiques</Link>
             </div>
           )}
         </div>
@@ -406,9 +522,10 @@ function TemplatesCategoryContent() {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <Link href="/templates-landing" className="inline-flex items-center gap-2 text-zinc-500 hover:text-orange-500 transition-colors text-sm">
+          <Link href="/templates-landing" className="inline-flex items-center gap-2 text-gray-500 hover:text-rose-500 transition-colors text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -418,28 +535,61 @@ function TemplatesCategoryContent() {
 
         {/* Hero Section */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/30 rounded-full mb-6">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-orange-500">{category.templates.length} templates disponibles</span>
-          </div>
+          {/* Badge */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-rose-200 rounded-full mb-8 shadow-sm"
+          >
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-semibold text-gray-700">{category.templates.length} templates disponibles</span>
+          </motion.div>
           
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-xl shadow-orange-500/30">
-            <span className="text-4xl text-black">✨</span>
-          </div>
+          {/* Icon */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-rose-100 to-pink-100 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/20"
+          >
+            <span className="text-4xl">{category.icon}</span>
+          </motion.div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent">
+          {/* Title */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6"
+          >
+            <span className="bg-gradient-to-r from-gray-900 via-rose-800 to-gray-900 bg-clip-text text-transparent">
               {category.name}
             </span>
-          </h1>
-          <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
+          </motion.h1>
+          
+          {/* Description */}
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed"
+          >
             {category.description}
-          </p>
+          </motion.p>
+
+          {/* Decorative Line */}
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="w-24 h-1 mx-auto mt-10 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full origin-center"
+          />
         </motion.div>
 
         {/* Templates Grid */}
@@ -453,7 +603,6 @@ function TemplatesCategoryContent() {
             <TemplateCard
               key={template.id}
               template={template}
-              category={category}
               onPreview={handlePreview}
               onSelect={handleSelect}
             />
@@ -467,15 +616,35 @@ function TemplatesCategoryContent() {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <div className="w-24 h-24 mx-auto mb-6 bg-zinc-900 border border-orange-500/20 rounded-full flex items-center justify-center">
-              <svg className="w-12 h-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 mx-auto mb-6 bg-white border border-rose-200 rounded-full flex items-center justify-center shadow-lg">
+              <svg className="w-12 h-12 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Aucun template disponible</h3>
-            <p className="text-zinc-400">De nouveaux templates seront bientôt ajoutés.</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucun template disponible</h3>
+            <p className="text-gray-500">De nouveaux templates seront bientôt ajoutés.</p>
           </motion.div>
         )}
+
+        {/* Additional CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mt-20 text-center"
+        >
+          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl shadow-rose-500/5 border border-rose-100">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Besoin d&apos;un template sur mesure ?
+            </h3>
+            <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              Notre équipe peut créer un template personnalisé pour votre marque.
+            </p>
+            <button className="px-8 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-xl hover:shadow-rose-500/30 transition-all">
+              Contacter-nous
+            </button>
+          </div>
+        </motion.div>
       </main>
 
       {/* Create Modal */}
@@ -485,7 +654,7 @@ function TemplatesCategoryContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setShowModal(false)}
           >
             <motion.div
@@ -493,23 +662,23 @@ function TemplatesCategoryContent() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-black border border-orange-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-orange-500/10"
+              className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
             >
               <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                  <span className="text-3xl text-black">✨</span>
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg">
+                  <span className="text-3xl">{category.icon}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
                   {category.templates.find(t => t.id === selectedTemplate)?.name}
                 </h3>
-                <p className="text-zinc-400">
+                <p className="text-gray-500">
                   Donnez un nom à votre landing page
                 </p>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Nom de la landing page
                   </label>
                   <input
@@ -517,7 +686,7 @@ function TemplatesCategoryContent() {
                     value={landingName}
                     onChange={(e) => setLandingName(e.target.value)}
                     placeholder="Ex: Ma Boutique Cosmétique"
-                    className="w-full px-5 py-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
+                    className="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100 transition-all"
                     autoFocus
                   />
                 </div>
@@ -525,18 +694,18 @@ function TemplatesCategoryContent() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="flex-1 py-4 border-2 border-zinc-800 text-zinc-300 font-medium rounded-xl hover:bg-zinc-900 transition-colors"
+                    className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleCreate}
                     disabled={!landingName.trim() || creating}
-                    className="flex-1 py-4 rounded-xl font-bold text-black shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-xl hover:shadow-orange-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {creating ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         Création...
                       </>
                     ) : (
@@ -563,18 +732,18 @@ function TemplatesCategoryContent() {
       />
 
       {/* Footer */}
-      <footer className="py-12 mt-20 border-t border-orange-500/20 bg-black">
+      <footer className="py-12 mt-20 bg-white border-t border-rose-100">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-lg font-bold text-white">ShopLaunch</span>
+            <span className="text-lg font-bold text-gray-900">ShopLaunch</span>
           </div>
-          <p className="text-zinc-500 text-sm">
-            © 2026 ShopLaunch. Créez vos landing pages en quelques minutes.
+          <p className="text-gray-500 text-sm">
+            © 2026 ShopLaunch. Creez vos landing pages en quelques minutes.
           </p>
         </div>
       </footer>
