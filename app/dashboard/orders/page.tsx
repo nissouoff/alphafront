@@ -47,7 +47,8 @@ export default function OrdersPage() {
   useEffect(() => {
     const stored = localStorage.getItem("blocked_clients");
     if (stored) {
-      setBlockedClients(JSON.parse(stored));
+      const parsed = JSON.parse(stored);
+      setBlockedClients(() => parsed);
     }
   }, []);
 

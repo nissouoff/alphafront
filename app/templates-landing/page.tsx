@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useState } from "react";
 
 const TEMPLATES = [
@@ -57,39 +58,111 @@ const TEMPLATES = [
 
 export default function TemplatesLandingPage() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const getThemeClasses = () => {
+    switch (theme) {
+      case "dark":
+        return {
+          bg: "bg-zinc-900",
+          gradient: "from-zinc-900 via-zinc-800 to-zinc-900",
+          card: "bg-zinc-800/50 border-zinc-700/50",
+          cardHover: "hover:border-purple-500/50",
+          text: "text-zinc-100",
+          textMuted: "text-zinc-400",
+          border: "border-zinc-700/50",
+          button: "bg-purple-500",
+          headerBg: "bg-zinc-900/80",
+          headerBorder: "border-zinc-700/50",
+          badge: "bg-purple-500/20 text-purple-300",
+          accent: "from-purple-400 to-pink-400",
+          accentText: "text-purple-400",
+        };
+      case "blue":
+        return {
+          bg: "bg-blue-950",
+          gradient: "from-blue-950 via-blue-900 to-blue-950",
+          card: "bg-blue-900/50 border-blue-700/50",
+          cardHover: "hover:border-blue-500/50",
+          text: "text-blue-100",
+          textMuted: "text-blue-300",
+          border: "border-blue-700/50",
+          button: "bg-blue-500",
+          headerBg: "bg-blue-900/80",
+          headerBorder: "border-blue-700/50",
+          badge: "bg-blue-500/20 text-blue-300",
+          accent: "from-blue-400 to-cyan-400",
+          accentText: "text-blue-400",
+        };
+      case "orange":
+        return {
+          bg: "bg-zinc-950",
+          gradient: "from-zinc-950 via-zinc-900 to-zinc-950",
+          card: "bg-zinc-900/50 border-orange-500/30",
+          cardHover: "hover:border-orange-500/50",
+          text: "text-orange-50",
+          textMuted: "text-orange-200/60",
+          border: "border-orange-500/30",
+          button: "bg-orange-500",
+          headerBg: "bg-zinc-950/80 backdrop-blur-xl",
+          headerBorder: "border-orange-500/30",
+          badge: "bg-orange-500/20 text-orange-300",
+          accent: "from-orange-400 to-red-400",
+          accentText: "text-orange-400",
+        };
+      default:
+        return {
+          bg: "bg-zinc-50",
+          gradient: "from-zinc-50 via-white to-zinc-50",
+          card: "bg-white/80 border-zinc-200",
+          cardHover: "hover:border-zinc-400",
+          text: "text-zinc-900",
+          textMuted: "text-zinc-600",
+          border: "border-zinc-200",
+          button: "bg-zinc-900",
+          headerBg: "bg-white/80 backdrop-blur-xl",
+          headerBorder: "border-zinc-200",
+          badge: "bg-zinc-900/10 text-zinc-700",
+          accent: "from-zinc-600 to-zinc-800",
+          accentText: "text-zinc-800",
+        };
+    }
+  };
+
+  const c = getThemeClasses();
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-        <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+      <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${c.gradient}`}>
+        <div className={`animate-spin w-12 h-12 border-4 ${c.button} border-t-transparent rounded-full`}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+    <div className={`min-h-screen bg-gradient-to-br ${c.gradient}`}>
       {/* Header */}
-      <header className="border-b border-zinc-700/50 bg-zinc-900/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className={`border-b ${c.headerBorder} ${c.headerBg} backdrop-blur-xl sticky top-0 z-50`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+          <Link href="/dashboard" className={`flex items-center gap-2 sm:gap-3 ${c.text}`}>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${c.accent} rounded-xl flex items-center justify-center`}>
               <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-lg sm:text-xl font-bold text-white">ShopLaunch</span>
+            <span className={`text-lg sm:text-xl font-bold ${c.text}`}>ShopLaunch</span>
           </Link>
           
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors">
+            <Link href="/dashboard" className={`${c.textMuted} hover:${c.text} transition-colors`}>
               Dashboard
             </Link>
-            <Link href="/templates-landing" className="text-white font-medium">
+            <Link href="/templates-landing" className={c.text}>
               Landing Pages
             </Link>
-            <Link href="/templates" className="text-zinc-400 hover:text-white transition-colors">
+            <Link href="/templates" className={`${c.textMuted} hover:${c.text} transition-colors`}>
               Boutiques
             </Link>
           </nav>

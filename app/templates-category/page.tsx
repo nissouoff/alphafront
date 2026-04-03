@@ -4,10 +4,13 @@ import { useState, Suspense, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { createLanding } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+
+type Theme = "simple" | "dark" | "blue" | "orange";
 
 const CATEGORY_TEMPLATES = {
   cosmetic: {
@@ -301,6 +304,7 @@ function TemplatesCategoryContent() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('category') || 'cosmetic';
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -308,14 +312,80 @@ function TemplatesCategoryContent() {
   const [showModal, setShowModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const getThemeClasses = () => {
+    switch (theme) {
+      case "dark":
+        return {
+          bg: "bg-zinc-900",
+          card: "bg-zinc-800 border-zinc-700",
+          text: "text-zinc-100",
+          textMuted: "text-zinc-400",
+          border: "border-zinc-700",
+          button: "bg-zinc-700",
+          headerBg: "bg-zinc-900/90",
+          headerBorder: "border-zinc-700",
+          headerText: "text-zinc-100",
+          headerTextMuted: "text-zinc-400",
+          gradient: "from-zinc-900 via-zinc-800 to-zinc-900",
+          gradientCard: "from-rose-900/20 via-zinc-800/50 to-pink-900/20",
+        };
+      case "blue":
+        return {
+          bg: "bg-blue-950",
+          card: "bg-blue-900/50 border-blue-700",
+          text: "text-blue-100",
+          textMuted: "text-blue-300",
+          border: "border-blue-700",
+          button: "bg-blue-600",
+          headerBg: "bg-blue-900/90",
+          headerBorder: "border-blue-700",
+          headerText: "text-blue-100",
+          headerTextMuted: "text-blue-300",
+          gradient: "from-blue-950 via-blue-900 to-blue-950",
+          gradientCard: "from-rose-900/20 via-blue-900/50 to-pink-900/20",
+        };
+      case "orange":
+        return {
+          bg: "bg-zinc-950",
+          card: "bg-zinc-900 border-orange-500/30",
+          text: "text-orange-50",
+          textMuted: "text-orange-200/60",
+          border: "border-orange-500/30",
+          button: "bg-orange-500",
+          headerBg: "bg-zinc-950/90 backdrop-blur-xl",
+          headerBorder: "border-orange-500/30",
+          headerText: "text-orange-50",
+          headerTextMuted: "text-orange-200/60",
+          gradient: "from-zinc-950 via-zinc-900 to-zinc-950",
+          gradientCard: "from-orange-900/20 via-zinc-900/50 to-red-900/20",
+        };
+      default:
+        return {
+          bg: "bg-zinc-50",
+          card: "bg-white border-zinc-200",
+          text: "text-zinc-900",
+          textMuted: "text-zinc-500",
+          border: "border-zinc-200",
+          button: "bg-zinc-900",
+          headerBg: "bg-white/80",
+          headerBorder: "border-rose-100",
+          headerText: "text-gray-900",
+          headerTextMuted: "text-gray-600",
+          gradient: "from-rose-50 via-white to-pink-50",
+          gradientCard: "from-rose-50 via-pink-50 to-rose-50",
+        };
+    }
+  };
+
+  const classes = getThemeClasses();
   const category = CATEGORY_TEMPLATES[categoryId as keyof typeof CATEGORY_TEMPLATES] || CATEGORY_TEMPLATES.cosmetic;
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
+      <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${classes.gradient}`}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement...</p>
+          <div className={`w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4`}></div>
+          <p className={classes.textMuted}>Chargement...</p>
         </div>
       </div>
     );
@@ -355,40 +425,40 @@ function TemplatesCategoryContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50">
+    <div className={`min-h-screen bg-gradient-to-br ${classes.gradient}`}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-rose-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className={`${classes.headerBg} backdrop-blur-xl border-b ${classes.headerBorder} sticky top-0 z-50`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3 group">
-              <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/30 group-hover:shadow-xl group-hover:shadow-rose-500/40 transition-all">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 group">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:shadow-xl group-hover:shadow-orange-500/40 transition-all">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-900">ShopLaunch</span>
+              <span className={`text-lg sm:text-xl font-bold ${classes.headerText}`}>ShopLaunch</span>
             </Link>
             
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
+            <nav className="hidden md:flex items-center gap-6 sm:gap-8">
+              <Link href="/dashboard" className={`text-sm ${classes.headerTextMuted} hover:${classes.headerText} transition-colors font-medium`}>
                 Dashboard
               </Link>
-              <Link href="/templates-landing" className="text-sm text-rose-500 font-semibold">
+              <Link href="/templates-landing" className="text-sm text-orange-500 font-semibold">
                 Landing Pages
               </Link>
-              <Link href="/templates" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
+              <Link href="/templates" className={`text-sm ${classes.headerTextMuted} hover:${classes.headerText} transition-colors font-medium`}>
                 Boutiques
               </Link>
             </nav>
 
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-rose-500/30">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/30">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-gray-600"
+                className={`md:hidden p-2 ${classes.headerTextMuted}`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -398,10 +468,10 @@ function TemplatesCategoryContent() {
           </div>
 
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-rose-100 mt-4 pt-4 space-y-3">
-              <Link href="/dashboard" className="block text-gray-600 hover:text-gray-900 py-2 font-medium">Dashboard</Link>
-              <Link href="/templates-landing" className="block text-rose-500 font-semibold py-2">Landing Pages</Link>
-              <Link href="/templates" className="block text-gray-600 hover:text-gray-900 py-2 font-medium">Boutiques</Link>
+            <div className="md:hidden border-t border-orange-500/30 mt-4 pt-4 space-y-3">
+              <Link href="/dashboard" className={`block ${classes.headerTextMuted} hover:${classes.headerText} py-2 font-medium`}>Dashboard</Link>
+              <Link href="/templates-landing" className="block text-orange-500 font-semibold py-2">Landing Pages</Link>
+              <Link href="/templates" className={`block ${classes.headerTextMuted} hover:${classes.headerText} py-2 font-medium`}>Boutiques</Link>
             </div>
           )}
         </div>
