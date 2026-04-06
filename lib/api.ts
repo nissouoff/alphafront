@@ -340,7 +340,7 @@ export interface Order {
   wilaya?: string;
   commune?: string;
   address?: string;
-  status: 'pending' | 'processing' | 'paid' | 'returned' | 'deleted';
+  status: string;
   createdAt: string;
   updatedAt: string;
 }
