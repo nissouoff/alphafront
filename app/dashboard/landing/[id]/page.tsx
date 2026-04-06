@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLanding, Landing, Order, updateOrderStatus, updateLanding, deleteOrder, getOrders } from "@/lib/api";
+import { usePageTitle } from "../../layout";
 import toast from "react-hot-toast";
 
 type OrderStatus = 'pending' | 'processing' | 'paid' | 'returned' | 'deleted';
@@ -41,6 +42,7 @@ export default function LandingDetailPage() {
   const router = useRouter();
   const params = useParams();
   const landingId = params.id as string;
+  const { setPageTitle } = usePageTitle();
 
   const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
@@ -127,6 +129,12 @@ export default function LandingDetailPage() {
       fetchData();
     }
   }, [landingId]);
+
+  useEffect(() => {
+    if (landing) {
+      setPageTitle(landing.name || landing.brandName || 'Landing');
+    }
+  }, [landing, setPageTitle]);
 
   useEffect(() => {
     if (!landingId || !user) return;
@@ -1044,20 +1052,18 @@ export default function LandingDetailPage() {
                 </div>
                 <div>
                   <p className="font-bold text-base sm:text-lg text-white">{selectedOrder.productName}</p>
-                  <p className="font-bold text-lg sm:text-xl text-indigo-400">{selectedOrder.productPrice} DA</p>
+                  <p className="font-bold text-lg sm:text-xl text-indigo-400">{(selectedOrder.productPrice || selectedOrder.total) || '0'} DA</p>
                 </div>
               </div>
 
               <div className="p-3 sm:p-4 bg-zinc-700/50 rounded-xl">
                 <h3 className="font-semibold text-white mb-2 sm:mb-3 text-sm sm:text-base">Client</h3>
                 <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                  <p><span className="text-zinc-400">Nom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
-                  <p><span className="text-zinc-400">Prénom:</span> <span className="text-white">{selectedOrder.customer_firstname || '-'}</span></p>
+                  <p><span className="text-zinc-400">Nom et Prénom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
                   <p><span className="text-zinc-400">Téléphone:</span> <span className="text-white">{selectedOrder.phone}</span></p>
                   <p><span className="text-zinc-400">Wilaya:</span> <span className="text-white">{selectedOrder.wilaya}</span></p>
                   {selectedOrder.commune && <p><span className="text-zinc-400">Commune:</span> <span className="text-white">{selectedOrder.commune}</span></p>}
                   {selectedOrder.address && <p><span className="text-zinc-400">Adresse:</span> <span className="text-white">{selectedOrder.address}</span></p>}
-                  {selectedOrder.note && <p><span className="text-zinc-400">Note:</span> <span className="text-white">{selectedOrder.note}</span></p>}
                   <p><span className="text-zinc-400">Date:</span> <span className="text-white">{formatDateTime(selectedOrder.createdAt).date}</span></p>
                   <p><span className="text-zinc-400">Heure:</span> <span className="text-white">{formatDateTime(selectedOrder.createdAt).time}</span></p>
                 </div>

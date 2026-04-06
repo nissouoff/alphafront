@@ -2,6 +2,26 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { Globe } from "lucide-react";
+
+type Language = 'fr' | 'ar';
+
+const translations = {
+  fr: {
+    discoverCollection: 'Découvrir la collection',
+    fastDelivery: 'Livraison rapide',
+    returnHome: 'Retour à la page principale',
+    orderConfirmed: 'Commande confirmée !',
+    price: 'Prix',
+  },
+  ar: {
+    discoverCollection: 'اكتشف المجموعة',
+    fastDelivery: 'توصيل سريع',
+    returnHome: 'العودة للصفحة الرئيسية',
+    orderConfirmed: 'تم تأكيد الطلب!',
+    price: 'السعر',
+  },
+};
 
 interface Product {
   id: string;
@@ -52,8 +72,18 @@ interface Content {
   sectionBg: string;
   showReviews: boolean;
   showStats: boolean;
+  showGuarantee?: boolean;
+  guaranteeText?: string;
   satisfactionRate?: string;
   clientsCount?: string;
+  showTrustBar?: boolean;
+  trustBarText?: string;
+  feature1Title?: string;
+  feature1Desc?: string;
+  feature2Title?: string;
+  feature2Desc?: string;
+  feature3Title?: string;
+  feature3Desc?: string;
 }
 
 interface LandingData {
@@ -116,6 +146,8 @@ function CosmeticTemplate() {
     satisfactionRate: '98',
     clientsCount: '15K+',
     showReviews: true,
+    showGuarantee: false,
+    guaranteeText: 'Garantie satisfait ou remboursé sous 30 jours',
   });
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -125,6 +157,10 @@ function CosmeticTemplate() {
   const [error, setError] = useState<string | null>(null);
   const [reviewForm, setReviewForm] = useState({ firstName: '', lastName: '', rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [lang, setLang] = useState<Language>('fr');
+  const [landingSlug, setLandingSlug] = useState<string>('');
+
+  const t = translations[lang];
 
   const satisfactionRate = reviews.length > 0 
     ? Math.round((reviews.filter(r => r.rating >= 4).length / reviews.length) * 100)
@@ -137,6 +173,16 @@ function CosmeticTemplate() {
     : '0';
 
   const isPreview = searchParams.get('preview') === 'true';
+  const isEditMode = searchParams.get('editMode') === 'true';
+
+  const handleEditClick = (field: string) => {
+    if (isEditMode && window.parent !== window) {
+      window.parent.postMessage({ type: 'selectField', field }, '*');
+    }
+  };
+
+  const editableStyle = isEditMode ? "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:ring-offset-2 rounded transition-all" : "";
+
   const previewContent: Content = {
     logo: '',
     brandName: 'Cosméto Nature',
@@ -176,6 +222,8 @@ function CosmeticTemplate() {
     satisfactionRate: '98',
     clientsCount: '15K+',
     showReviews: true,
+    showGuarantee: false,
+    guaranteeText: 'Garantie satisfait ou remboursé sous 30 jours',
   };
   const previewData = {
     product: {
@@ -204,9 +252,25 @@ function CosmeticTemplate() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'updateContent') {
+        const { content: newContent, product: newProduct } = event.data;
+        if (newContent) setContent(prev => ({ ...prev, ...newContent }));
+        if (newProduct) setProducts([newProduct]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isEditMode]);
+
   const loadData = async () => {
     const landingId = searchParams.get('id');
     const dataParam = searchParams.get('data');
+    const isPreview = searchParams.get('preview') === 'true';
 
     if (dataParam) {
       try {
@@ -224,8 +288,12 @@ function CosmeticTemplate() {
       try {
         console.log('Loading landing with ID:', landingId);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-        console.log('API URL:', `${API_URL}/public/landing/${landingId}`);
-        const response = await fetch(`${API_URL}/public/landing/${landingId}`);
+        let url = `${API_URL}/public/landing/${landingId}`;
+        if (isPreview) {
+          url = `${API_URL}/preview/${landingId}`;
+        }
+        console.log('API URL:', url);
+        const response = await fetch(url);
         
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
@@ -238,22 +306,36 @@ function CosmeticTemplate() {
         
         const result = await response.json();
         console.log('Result:', result);
-        if (result.landing) {
-          console.log('Landing found:', result.landing.name);
-          console.log('Content:', result.landing.content);
-          console.log('Products:', result.landing.products);
-          if (result.landing.content) {
-            setContent(result.landing.content);
+        const landing = result.landing || result;
+        if (landing) {
+          console.log('Landing found:', landing.name);
+          console.log('Content:', landing.content);
+          console.log('Products:', landing.products);
+          console.log('Landing slug:', landing.slug);
+          if (landing.slug) {
+            setLandingSlug(landing.slug);
           }
-          if (result.landing.products && result.landing.products.length > 0) {
+          if (result.landing?.content) {
+            setContent(result.landing.content);
+          } else if (landing.content) {
+            setContent(landing.content);
+          }
+          if (result.landing?.products && result.landing.products.length > 0) {
             setProducts(result.landing.products);
             setSelectedPhotoIndex(0);
+          } else if (landing.products && landing.products.length > 0) {
+            setProducts(landing.products);
+            setSelectedPhotoIndex(0);
           }
-          if (result.landing.reviews) {
+          if (result.landing?.reviews) {
             setReviews(result.landing.reviews);
+          } else if (landing.reviews) {
+            setReviews(landing.reviews);
           }
-          if (result.landing.ordersCount !== undefined) {
+          if (result.landing?.ordersCount !== undefined) {
             setOrdersCount(result.landing.ordersCount);
+          } else if (landing.ordersCount !== undefined) {
+            setOrdersCount(landing.ordersCount);
           }
         }
       } catch (error: any) {
@@ -266,14 +348,15 @@ function CosmeticTemplate() {
 
   const handleOrder = (product: Product) => {
     const landingId = searchParams.get('id') || '';
-    
     const orderData = {
       name: product.name,
       price: product.price,
-      landingSlug: landingId,
+      photo: product.photos && product.photos.length > 0 ? product.photos[0] : '',
+      description: product.description || '',
+      landingId: landingSlug || landingId,
     };
-    const encodedData = encodeURIComponent(btoa(JSON.stringify(orderData)));
-    window.location.href = `/template/cosmetic/order?product=${encodedData}`;
+    sessionStorage.setItem('orderData', JSON.stringify(orderData));
+    window.location.href = `/template/cosmetic/order?lang=${lang}&id=${landingSlug || landingId}`;
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -355,7 +438,7 @@ function CosmeticTemplate() {
   const product = products[0];
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className={`min-h-screen bg-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`}>
       {/* Header */}
       {content.showHeaderNav !== false && (
         <header className="bg-white border-b border-zinc-100 sticky top-0 z-50 shadow-sm">
@@ -370,16 +453,28 @@ function CosmeticTemplate() {
                   </div>
                 )}
                 <div>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent">{content.brandName}</span>
+                  <span onClick={() => handleEditClick('brandName')} className={`text-2xl font-bold bg-gradient-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent ${editableStyle}`}>{content.brandName}</span>
                   <p className="text-xs text-zinc-500 tracking-widest uppercase">Cosmétiques Naturels</p>
                 </div>
               </div>
               
-              <nav className="hidden lg:flex items-center gap-8">
-                <a href="#collection" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Collection</a>
-<a href="#avis" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Avis</a>
-                <a href="#contact" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Contact</a>
-              </nav>
+              <div className="flex items-center gap-4">
+                <nav className="hidden lg:flex items-center gap-8">
+                  <a href="#collection" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Collection</a>
+                  <a href="#avis" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Avis</a>
+                  <a href="#contact" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Contact</a>
+                </nav>
+                
+                <button
+                  onClick={() => setLang(lang === 'fr' ? 'ar' : 'fr')}
+                  className="flex items-center gap-2 px-3 py-2 bg-rose-100 hover:bg-rose-200 rounded-lg transition-colors text-sm font-medium text-rose-700"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span className={lang === 'ar' ? 'text-orange-500' : ''}>FR</span>
+                  <span className="text-rose-400">/</span>
+                  <span className={lang === 'ar' ? '' : 'text-orange-500'}>AR</span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -412,12 +507,12 @@ function CosmeticTemplate() {
                 )}
                 
                 {/* Title */}
-                <h1 className={`${content.heroTextSize || 'text-4xl md:text-6xl'} font-bold ${content.heroTextColor || 'text-zinc-900'} leading-tight`}>
+                <h1 onClick={() => handleEditClick('heroTitle')} className={`${content.heroTextSize || 'text-4xl md:text-6xl'} font-bold ${content.heroTextColor || 'text-zinc-900'} leading-tight ${editableStyle}`}>
                   {content.heroTitle}
                 </h1>
                 
                 {/* Subtitle */}
-                <p className="text-lg md:text-xl text-zinc-600 leading-relaxed max-w-lg">
+                <p onClick={() => handleEditClick('heroSubtitle')} className={`text-lg md:text-xl text-zinc-600 leading-relaxed max-w-lg ${editableStyle}`}>
                   {content.heroSubtitle}
                 </p>
                 
@@ -427,8 +522,9 @@ function CosmeticTemplate() {
                     <a 
                       href="#collection" 
                       className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                      onClick={(e) => { e.preventDefault(); if (!isEditMode) window.location.href = '#collection'; }}
                     >
-                      {content.ctaButton}
+                      {t.discoverCollection}
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
@@ -437,23 +533,34 @@ function CosmeticTemplate() {
                       href="#bienfaits" 
                       className="inline-flex px-8 py-4 bg-white text-zinc-800 font-bold rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 items-center gap-2 border border-zinc-200"
                     >
-                      En savoir plus
+                      {t.fastDelivery}
                     </a>
                   </div>
                 )}
                 
                 {/* Stats */}
                 {content.showStats !== false && (
-                  <div className="flex items-center gap-8 pt-8 border-t border-zinc-200/50">
+                  <div className="flex items-center gap-8 pt-8 border-t border-zinc-200/50 flex-wrap">
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-rose-500">{satisfactionRate}%</p>
-                      <p className="text-xs text-zinc-500 uppercase tracking-wider">Satisfait</p>
+                      <p onClick={() => handleEditClick('satisfactionRate')} className={`text-3xl font-bold text-rose-500 ${editableStyle}`}>{satisfactionRate}%</p>
+                      <p onClick={() => handleEditClick('clientsCount')} className={`text-xs text-zinc-500 uppercase tracking-wider ${editableStyle}`}>Satisfait</p>
                     </div>
                     <div className="w-px h-12 bg-zinc-200"></div>
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-rose-500">{clientsCount}</p>
-                      <p className="text-xs text-zinc-500 uppercase tracking-wider">Clients</p>
+                      <p onClick={() => handleEditClick('clientsCount')} className={`text-3xl font-bold text-rose-500 ${editableStyle}`}>{clientsCount}</p>
+                      <p onClick={() => handleEditClick('clientsCount')} className={`text-xs text-zinc-500 uppercase tracking-wider ${editableStyle}`}>Clients</p>
                     </div>
+                    {content.showTrustBar !== false && content.trustBarText && (
+                      <>
+                        <div className="w-px h-12 bg-zinc-200"></div>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          <p onClick={() => handleEditClick('trustBarText')} className={`text-sm font-medium text-zinc-600 ${editableStyle}`}>{content.trustBarText}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -596,7 +703,7 @@ function CosmeticTemplate() {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    {content.ctaButton}
+                    {t.discoverCollection}
                   </button>
                 )}
 
@@ -617,6 +724,26 @@ function CosmeticTemplate() {
       )}
 
       {/* Benefits Section */}
+      {/* Guarantee Section */}
+      {content.showGuarantee && content.guaranteeText && (
+        <section className="py-12 md:py-16 bg-gradient-to-r from-green-50 to-emerald-50">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <h3 
+              onClick={() => handleEditClick('guaranteeText')}
+              className={`text-xl md:text-2xl font-bold text-green-800 mb-2 ${editableStyle}`}
+            >
+              {content.guaranteeText}
+            </h3>
+            <p className="text-green-600">Achetez en toute confiance</p>
+          </div>
+        </section>
+      )}
+
       {/* Reviews Section */}
       {content.showReviews !== false && (
         <section id="avis" className="py-16 md:py-24 bg-white">
@@ -789,7 +916,7 @@ function CosmeticTemplate() {
                   )}
                   <span className="text-xl md:text-2xl font-bold">{content.brandName}</span>
                 </div>
-                <p className="text-zinc-400 leading-relaxed text-sm md:text-base">{content.footerText}</p>
+                <p onClick={() => handleEditClick('footerText')} className={`text-zinc-400 leading-relaxed text-sm md:text-base ${editableStyle}`}>{content.footerText}</p>
               </div>
               
               {/* Links */}

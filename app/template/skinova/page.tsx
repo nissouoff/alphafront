@@ -20,14 +20,19 @@ interface Product {
 interface Content {
   logo: string;
   brandName: string;
+  brandNameAr?: string;
   heroTitle: string;
+  heroTitleAr?: string;
   heroSubtitle: string;
+  heroSubtitleAr?: string;
   ctaButton: string;
+  ctaButtonAr?: string;
   contactEmail: string;
   contactWhatsapp: string;
   contactInstagram: string;
   contactFacebook: string;
   footerText: string;
+  footerTextAr?: string;
   showHeader: boolean;
   showHeroTitle: boolean;
   showHeroSubtitle: boolean;
@@ -45,8 +50,13 @@ interface Content {
   clientsCount?: string;
   showGuarantee: boolean;
   guaranteeText?: string;
+  guaranteeTextAr?: string;
   features?: { title: string; description: string; icon: string }[];
   faqs?: { question: string; answer: string }[];
+  ctaFinalTitle?: string;
+  ctaFinalTitleAr?: string;
+  ctaFinalSubtitle?: string;
+  ctaFinalSubtitleAr?: string;
 }
 
 export default function SkinovaTemplatePage() {
@@ -67,14 +77,19 @@ function SkinovaTemplate() {
   const [content, setContent] = useState<Content>({
     logo: '',
     brandName: 'Skinova',
+    brandNameAr: 'سكينيوفا',
     heroTitle: 'L\'Excellence du Soin',
+    heroTitleAr: 'التميز في العناية',
     heroSubtitle: 'Des formulations révolutionnaires pour une peau transformée. Le secret des peaux parfaites enfin révélé.',
+    heroSubtitleAr: 'تركيبات ثورية لبشرة متحولة. سر البشرة المثالية أصبح مكشوفاً.',
     ctaButton: 'Découvrir la Collection',
+    ctaButtonAr: 'اكتشف المجموعة',
     contactEmail: 'contact@skinova.com',
     contactWhatsapp: '',
     contactInstagram: '',
     contactFacebook: '',
     footerText: '© 2026 Skinova. Excellence cosmétique. Fabriqué en Algérie.',
+    footerTextAr: '© 2026 سكينوفا. تميز تجميلي. مصنوع في الجزائر.',
     showHeader: true,
     showHeroTitle: true,
     showHeroSubtitle: true,
@@ -92,6 +107,11 @@ function SkinovaTemplate() {
     showFAQ: true,
     showGuarantee: false,
     guaranteeText: 'Garantie 30 jours',
+    guaranteeTextAr: 'ضمان 30 يوماً',
+    ctaFinalTitle: 'Prête à transformer votre peau ?',
+    ctaFinalTitleAr: 'هل أنت مستعدة لتحويل بشرتك؟',
+    ctaFinalSubtitle: 'Rejoignez plus de 15K+ utilisatrices satisfaites et découvrez l\'excellence Skinova.',
+    ctaFinalSubtitleAr: 'انضمي إلى أكثر من 15K+ مستخدمة satisfaites واكتشفي تميز Skinova.',
     features: [
       { title: 'Formule Exclusive', description: 'Brevet déposé', icon: '⚗️' },
       { title: 'Actifs Concentrés', description: '20% d\'actifs purs', icon: '💧' },
@@ -112,6 +132,25 @@ function SkinovaTemplate() {
   const [ordersCount, setOrdersCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [lang, setLang] = useState<'fr' | 'ar'>('fr');
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('skinova_lang') as 'fr' | 'ar' | null;
+    if (savedLang) {
+      setLang(savedLang);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('skinova_lang', lang);
+  }, [lang]);
+
+  const handleLangChange = (newLang: 'fr' | 'ar') => {
+    setLang(newLang);
+  };
 
   const satisfactionRate = reviews.length > 0
     ? Math.round((reviews.filter(r => r.rating >= 4).length / reviews.length) * 100)
@@ -124,6 +163,15 @@ function SkinovaTemplate() {
     : content.clientsCount || '0';
 
   const isPreview = searchParams.get('preview') === 'true';
+  const isEditMode = searchParams.get('editMode') === 'true';
+
+  const handleEditClick = (field: string) => {
+    if (isEditMode && window.parent !== window) {
+      window.parent.postMessage({ type: 'selectField', field }, '*');
+    }
+  };
+
+  const editableStyle = isEditMode ? "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:ring-offset-2 rounded transition-all" : "";
 
   const previewData = {
     product: {
@@ -149,17 +197,37 @@ function SkinovaTemplate() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'updateContent') {
+        const { content: newContent, product: newProduct } = event.data;
+        if (newContent) setContent(prev => ({ ...prev, ...newContent }));
+        if (newProduct) setProducts([newProduct]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isEditMode]);
+
   const previewContent: Content = {
     logo: '',
     brandName: 'Skinova',
+    brandNameAr: 'سكينيوفا',
     heroTitle: 'L\'Excellence du Soin',
+    heroTitleAr: 'التميز في العناية',
     heroSubtitle: 'Des formulations révolutionnaires pour une peau transformée.',
+    heroSubtitleAr: 'تركيبات ثورية لبشرة متحولة.',
     ctaButton: 'Découvrir la Collection',
+    ctaButtonAr: 'اكتشف المجموعة',
     contactEmail: 'contact@skinova.com',
     contactWhatsapp: '',
     contactInstagram: '',
     contactFacebook: '',
     footerText: '© 2026 Skinova. Excellence cosmétique.',
+    footerTextAr: '© 2026 سكينوفا. تميز تجميلي.',
     showHeader: true,
     showHeroTitle: true,
     showHeroSubtitle: true,
@@ -177,6 +245,11 @@ function SkinovaTemplate() {
     showFAQ: true,
     showGuarantee: false,
     guaranteeText: 'Garantie 30 jours',
+    guaranteeTextAr: 'ضمان 30 يوماً',
+    ctaFinalTitle: 'Prête à transformer votre peau ?',
+    ctaFinalTitleAr: 'هل أنت مستعدة لتحويل بشرتك؟',
+    ctaFinalSubtitle: 'Rejoignez plus de 15K+ utilisatrices satisfaites et découvrez l\'excellence Skinova.',
+    ctaFinalSubtitleAr: 'انضمي إلى أكثر من 15K+ مستخدمة satisfaites واكتشفي تميز Skinova.',
     features: [
       { title: 'Formule Exclusive', description: 'Brevet déposé', icon: '⚗️' },
       { title: 'Actifs Concentrés', description: '20% d\'actifs purs', icon: '💧' },
@@ -228,10 +301,39 @@ function SkinovaTemplate() {
         }
       } catch (error: any) {
         console.error('Error loading landing:', error);
-        setError(error.message || 'Erreur lors du chargement');
+        setError('Erreur lors du chargement');
       }
     }
     setLoading(false);
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const landingId = searchParams.get('id');
+    if (!landingId || !reviewForm.name || !reviewForm.comment) return;
+
+    setSubmittingReview(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${API_URL}/public/landing/${landingId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: reviewForm.name,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+        }),
+      });
+
+      if (response.ok) {
+        setReviews([...reviews, { ...reviewForm, id: Date.now().toString() }]);
+        setReviewForm({ name: '', rating: 5, comment: '' });
+        setShowReviewForm(false);
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
+    setSubmittingReview(false);
   };
 
   const handleOrder = (product: Product) => {
@@ -239,10 +341,13 @@ function SkinovaTemplate() {
     const orderData = {
       name: product.name,
       price: product.price,
+      photo: product.photos && product.photos.length > 0 ? product.photos[0] : '',
+      description: product.description || '',
+      landingId: landingId,
       landingSlug: landingId,
     };
-    const encodedData = encodeURIComponent(btoa(JSON.stringify(orderData)));
-    window.location.href = `/template/skinova/order?product=${encodedData}`;
+    sessionStorage.setItem('orderData', JSON.stringify(orderData));
+    window.location.href = `/template/skinova/order?lang=${lang}&id=${landingId}`;
   };
 
   if (loading) {
@@ -267,7 +372,7 @@ function SkinovaTemplate() {
   const product = products[0];
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className={`min-h-screen bg-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
         
@@ -339,23 +444,37 @@ function SkinovaTemplate() {
                     <span className="text-white font-serif text-lg">S</span>
                   </div>
                 )}
-                <span className="text-xl tracking-widest uppercase font-serif font-medium text-stone-900">
-                  {content.brandName}
+                <span onClick={() => handleEditClick('brandName')} className={`text-xl tracking-widest uppercase font-serif font-medium text-stone-900 ${editableStyle}`}>
+                  {lang === 'ar' ? (content.brandNameAr || content.brandName) : content.brandName}
                 </span>
               </div>
               
-              <nav className="hidden lg:flex items-center gap-12">
-                <a href="#collection" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">Collection</a>
-                <a href="#avis" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">Témoignages</a>
-                <a href="#faq" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">FAQ</a>
-              </nav>
+              <div className="flex items-center gap-4">
+                <nav className="hidden lg:flex items-center gap-12">
+                  <a href="#collection" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">{lang === 'ar' ? 'المنتجات' : 'Collection'}</a>
+                  <a href="#avis" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">{lang === 'ar' ? 'التعليقات' : 'Témoignages'}</a>
+                  <a href="#faq" className="text-xs tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">FAQ</a>
+                </nav>
 
-              <button
-                onClick={() => product && handleOrder(product)}
-                className="hidden sm:inline-block px-6 py-2.5 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium rounded-none hover:bg-stone-800 transition-colors"
-              >
-                Commander
-              </button>
+                <div className="flex items-center gap-1 bg-stone-100 rounded-lg p-1">
+                  <button
+                    onClick={() => handleLangChange('fr')}
+                    className={`px-3 py-1.5 text-xs tracking-widest uppercase font-medium rounded transition-colors ${
+                      lang === 'fr' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    FR
+                  </button>
+                  <button
+                    onClick={() => handleLangChange('ar')}
+                    className={`px-3 py-1.5 text-xs tracking-widest uppercase font-medium rounded transition-colors ${
+                      lang === 'ar' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    AR
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </header>
@@ -373,30 +492,28 @@ function SkinovaTemplate() {
                 <div className="h-px w-16 bg-stone-300 mb-8 animate-line origin-left"></div>
                 
                 <p className="text-xs tracking-[0.3em] uppercase text-stone-500 mb-6 opacity-0 animate-fade-in-up">
-                  Collection Exclusive 2026
+                  {lang === 'ar' ? 'مجموعة حصرية 2026' : 'Collection Exclusive 2026'}
                 </p>
                 
-                <h1 className={`text-5xl sm:text-6xl lg:text-7xl font-serif font-medium leading-[1.1] ${content.heroTextColor} mb-8 opacity-0 animate-fade-in-up delay-100`}>
-                  {content.heroTitle.split(' ').map((word, i) => (
-                    <span key={i} className="inline-block">{word} </span>
-                  ))}
+                <h1 onClick={() => handleEditClick('heroTitle')} className={`text-5xl sm:text-6xl lg:text-7xl font-serif font-medium leading-[1.1] ${content.heroTextColor} mb-8 opacity-0 animate-fade-in-up delay-100 ${editableStyle}`}>
+                  {lang === 'ar' ? (content.heroTitleAr || content.heroTitle) : content.heroTitle}
                 </h1>
                 
                 <div className="w-px h-16 bg-stone-300 mb-8 opacity-0 animate-slide-in-right delay-200"></div>
                 
-                <p className="text-lg text-stone-500 leading-relaxed max-w-md mb-10 opacity-0 animate-fade-in-up delay-300">
-                  {content.heroSubtitle}
+                <p onClick={() => handleEditClick('heroSubtitle')} className={`text-lg text-stone-500 leading-relaxed max-w-md mb-10 opacity-0 animate-fade-in-up delay-300 ${editableStyle}`}>
+                  {lang === 'ar' ? (content.heroSubtitleAr || content.heroSubtitle) : content.heroSubtitle}
                 </p>
                 
                 <div className="flex flex-wrap gap-6 opacity-0 animate-fade-in-up delay-400">
                   <button
-                    onClick={() => product && handleOrder(product)}
+                    onClick={() => { if (!isEditMode) product && handleOrder(product); }}
                     className="inline-block px-10 py-4 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors animate-pulse-glow"
                   >
-                    {content.ctaButton}
+                    <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{lang === 'ar' ? (content.ctaButtonAr || content.ctaButton) : content.ctaButton}</span>
                   </button>
                   <a href="#collection" className="inline-block px-10 py-4 border border-stone-300 text-stone-700 text-xs tracking-widest uppercase font-medium hover:border-stone-900 transition-colors">
-                    Explorer
+                    {lang === 'ar' ? 'استكشف' : 'Explorer'}
                   </a>
                 </div>
               </div>
@@ -521,10 +638,10 @@ function SkinovaTemplate() {
 
                 {/* CTA */}
                 <button
-                  onClick={() => handleOrder(product)}
+                  onClick={() => { if (!isEditMode) handleOrder(product); }}
                   className="w-full py-5 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors"
                 >
-                  {content.ctaButton}
+                  <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{lang === 'ar' ? (content.ctaButtonAr || content.ctaButton) : content.ctaButton}</span>
                 </button>
 
                 {/* WhatsApp */}
@@ -533,7 +650,7 @@ function SkinovaTemplate() {
                     href={`https://wa.me/${content.contactWhatsapp.replace(/\D/g, '')}`}
                     className="w-full mt-4 py-4 bg-green-600 text-white text-xs tracking-widest uppercase font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                   >
-                    Commander sur WhatsApp
+                    {lang === 'ar' ? 'اطلب عبر واتساب' : 'Commander sur WhatsApp'}
                   </a>
                 )}
               </div>
@@ -587,54 +704,113 @@ function SkinovaTemplate() {
         <section id="avis" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-6 lg:px-12">
             <div className="text-center mb-16">
-              <p className="text-xs tracking-[0.3em] uppercase text-stone-500 mb-4">Témoignages</p>
-              <h2 className="text-3xl sm:text-4xl font-serif text-stone-900">Ce qu'en disent nos clientes</h2>
+              <p className="text-xs tracking-[0.3em] uppercase text-stone-500 mb-4">{lang === 'ar' ? 'شهادات' : 'Témoignages'}</p>
+              <h2 className="text-3xl sm:text-4xl font-serif text-stone-900">{lang === 'ar' ? 'ماذا تقول عميلاتنا' : 'Ce qu\'en disent nos clientes'}</h2>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {reviews.length > 0 ? (
-                reviews.slice(0, 6).map((review, i) => (
-                  <div key={review.id || i} className="p-8 bg-stone-50 border border-stone-100 hover:shadow-lg transition-shadow">
-                    <div className="flex text-stone-900 mb-6">{'★'.repeat(review.rating || 5)}</div>
-                    <p className="text-stone-600 leading-relaxed mb-8">"{review.comment}"</p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-white text-sm">
-                        {(review.firstName || review.name || 'A').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-stone-900">{review.name || `${review.firstName} ${review.lastName || ''}`}</p>
-                        <p className="text-xs text-stone-500">Cliente vérifiée ✓</p>
-                      </div>
+              {reviews.slice(0, 6).map((review, i) => (
+                <div key={review.id || i} className="p-8 bg-stone-50 border border-stone-100 hover:shadow-lg transition-shadow">
+                  <div className="flex text-stone-900 mb-6">{'★'.repeat(review.rating || 5)}</div>
+                  <p className="text-stone-600 leading-relaxed mb-8">"{review.comment}"</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-white text-sm">
+                      {(review.firstName || review.name || 'A').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-stone-900">{review.name || `${review.firstName} ${review.lastName || ''}`}</p>
+                      <p className="text-xs text-stone-500">Cliente vérifiée ✓</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <>
-                  {[
-                    { name: 'Sara M.', text: 'Résultats impressionnants après seulement 2 semaines. Ma peau est plus lumineuse et uniforme.', rating: 5 },
-                    { name: 'Lina B.', text: 'La texture est divine et le fini naturel. J\'ai enfin trouvé le produit parfait.', rating: 5 },
-                    { name: 'Amina K.', text: 'Mon dermatologue était surpris par la qualité de ma peau. Je recommande à 100%.', rating: 5 },
-                    { name: 'Fatima D.', text: 'Le rapport qualité-prix est exceptionnel. Je rachète systématiquement.', rating: 5 },
-                    { name: 'Nadia R.', text: 'Livraison rapide et emballage soigné. Le produit lui-même est magique.', rating: 5 },
-                    { name: 'Houda A.', text: 'Première fois que j\'écris un avis. Ce produit le mérite vraiment.', rating: 5 }
-                  ].map((review, i) => (
-                    <div key={i} className="p-8 bg-stone-50 border border-stone-100 hover:shadow-lg transition-shadow">
-                      <div className="flex text-stone-900 mb-6">{'★'.repeat(review.rating)}</div>
-                      <p className="text-stone-600 leading-relaxed mb-8">"{review.text}"</p>
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-white text-sm">
-                          {review.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-stone-900">{review.name}</p>
-                          <p className="text-xs text-stone-500">Cliente vérifiée ✓</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+                </div>
+              ))}
             </div>
+
+            {/* Add Review Button */}
+            {!showReviewForm && (
+              <div className="text-center mt-12">
+                <button
+                  onClick={() => setShowReviewForm(true)}
+                  className="inline-block px-8 py-4 border-2 border-stone-300 text-stone-700 text-xs tracking-widest uppercase font-medium hover:border-stone-900 hover:text-stone-900 transition-colors"
+                >
+                  {lang === 'ar' ? 'اكتبي تعليقاً' : 'Laisser un commentaire'}
+                </button>
+              </div>
+            )}
+
+            {/* Review Form */}
+            {showReviewForm && (
+              <div className="max-w-xl mx-auto mt-12 bg-stone-50 border border-stone-200 p-8">
+                <h3 className="text-2xl font-serif text-stone-900 mb-6 text-center">
+                  {lang === 'ar' ? 'اكتبي تعليقك' : 'Partagez votre expérience'}
+                </h3>
+                <form onSubmit={handleSubmitReview} className="space-y-6">
+                  <div>
+                    <label className="block text-xs tracking-widest uppercase text-stone-500 mb-3">
+                      {lang === 'ar' ? 'اسمك' : 'Votre nom'}
+                    </label>
+                    <input
+                      type="text"
+                      value={reviewForm.name}
+                      onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 focus:border-stone-900 focus:outline-none text-stone-900"
+                      placeholder={lang === 'ar' ? 'اسمك الكامل' : 'Votre nom complet'}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs tracking-widest uppercase text-stone-500 mb-3">
+                      {lang === 'ar' ? 'التقييم' : 'Votre note'}
+                    </label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                          className="text-2xl focus:outline-none transition-colors"
+                        >
+                          {star <= reviewForm.rating ? (
+                            <span className="text-stone-900">★</span>
+                          ) : (
+                            <span className="text-stone-300">☆</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs tracking-widest uppercase text-stone-500 mb-3">
+                      {lang === 'ar' ? 'تعليقك' : 'Votre commentaire'}
+                    </label>
+                    <textarea
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                      rows={4}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 focus:border-stone-900 focus:outline-none resize-none text-stone-900"
+                      placeholder={lang === 'ar' ? 'اكتبي رأيك...' : 'Partagez votre avis sur le produit...'}
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      type="submit"
+                      disabled={submittingReview}
+                      className="flex-1 py-3 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors disabled:opacity-50"
+                    >
+                      {submittingReview ? (lang === 'ar' ? 'جاري الإرسال...' : 'Envoi...') : (lang === 'ar' ? 'إرسال' : 'Envoyer')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowReviewForm(false)}
+                      className="px-6 py-3 border border-stone-300 text-stone-600 text-xs tracking-widest uppercase font-medium hover:border-stone-500 transition-colors"
+                    >
+                      {lang === 'ar' ? 'إلغاء' : 'Annuler'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -677,24 +853,24 @@ function SkinovaTemplate() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white rounded-full"></div>
         </div>
         
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center relative z-10">
-          <h2 className="text-4xl sm:text-5xl font-serif mb-6">
-            Prête à transformer votre peau ?
-          </h2>
-          <p className="text-stone-400 mb-10 max-w-xl mx-auto">
-            Rejoignez plus de {clientsCount} utilisatrices satisfaites et découvrez l'excellence Skinova.
-          </p>
-          <button
-            onClick={() => product && handleOrder(product)}
-            className="inline-block px-12 py-5 bg-white text-stone-900 text-xs tracking-widest uppercase font-medium hover:bg-stone-100 transition-colors animate-pulse-glow"
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center relative z-10" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          <h2 
+            onClick={() => handleEditClick('ctaFinalTitle')} 
+            className={`text-4xl sm:text-5xl font-serif mb-6 ${editableStyle}`}
           >
-            Commander Maintenant
-          </button>
+            {lang === 'ar' ? (content.ctaFinalTitleAr || content.ctaFinalTitle || 'هل أنت مستعدة لتحويل بشرتك؟') : (content.ctaFinalTitle || 'Prête à transformer votre peau ?')}
+          </h2>
+          <p 
+            onClick={() => handleEditClick('ctaFinalSubtitle')} 
+            className={`text-stone-400 mb-10 max-w-xl mx-auto ${editableStyle}`}
+          >
+            {lang === 'ar' ? (content.ctaFinalSubtitleAr || `انضمي إلى أكثر من ${clientsCount} مستخدمة satisfaites واكتشفي تميز Skinova.`) : (content.ctaFinalSubtitle || `Rejoignez plus de ${clientsCount} utilisatrices satisfaites et découvrez l'excellence Skinova.`)}
+          </p>
           <div className="flex justify-center flex-wrap gap-8 mt-12 pt-12 border-t border-stone-800">
             {content.showGuarantee && content.guaranteeText && (
-              <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {content.guaranteeText}</span>
+              <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {lang === 'ar' ? (content.guaranteeTextAr || content.guaranteeText) : content.guaranteeText}</span>
             )}
-            <span className="text-xs text-stone-500 tracking-widest uppercase">✓ Paiement à la livraison</span>
+            <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {lang === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
           </div>
         </div>
       </section>
@@ -707,17 +883,26 @@ function SkinovaTemplate() {
               <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center">
                 <span className="text-stone-900 font-serif text-lg">S</span>
               </div>
-              <span className="text-lg tracking-widest uppercase font-serif">{content.brandName}</span>
+              <span className="text-lg tracking-widest uppercase font-serif">{lang === 'ar' ? (content.brandNameAr || content.brandName) : content.brandName}</span>
             </div>
             
             <div className="flex gap-8">
               {content.contactEmail && <span className="text-xs text-stone-500">{content.contactEmail}</span>}
             </div>
             
-            <p className="text-xs text-stone-600">{content.footerText}</p>
+            <p onClick={() => handleEditClick('footerText')} className={`text-xs text-stone-600 ${editableStyle}`}>{lang === 'ar' ? (content.footerTextAr || content.footerText) : content.footerText}</p>
           </div>
         </div>
       </footer>
+
+      {/* Floating Language Toggle */}
+      <button
+        onClick={() => handleLangChange(lang === 'fr' ? 'ar' : 'fr')}
+        className="fixed bottom-8 left-8 w-14 h-14 bg-stone-900 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stone-800 transition-colors z-50 animate-float"
+        style={{ animationDelay: '0.5s' }}
+      >
+        <span className="text-sm font-bold">{lang === 'fr' ? 'AR' : 'FR'}</span>
+      </button>
 
       {/* Floating WhatsApp */}
       {content.contactWhatsapp && (

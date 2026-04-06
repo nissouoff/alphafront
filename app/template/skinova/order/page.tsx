@@ -22,7 +22,11 @@ interface Content {
 interface OrderProduct {
   name: string;
   price: string;
-  landingSlug: string;
+  photos?: string[];
+  description?: string;
+  photo?: string;
+  landingSlug?: string;
+  landingId?: string;
 }
 
 export default function SkinovaOrderPage() {
@@ -46,36 +50,52 @@ export default function SkinovaOrderPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const productData = params.get("product");
-    if (productData) {
+    const idParam = params.get("id");
+    
+    // Try to get from sessionStorage first
+    const stored = sessionStorage.getItem('orderData');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setProduct(parsed);
+        if (parsed.photo) {
+          setProductPhoto(parsed.photo);
+        }
+        setLandingSlug(parsed.landingId || parsed.landingSlug || idParam || '');
+      } catch (e) {
+        console.error("Error parsing order data:", e);
+      }
+    } else if (productData) {
       try {
         const decoded = JSON.parse(atob(decodeURIComponent(productData)));
         setProduct(decoded);
-        setLandingSlug(decoded.landingSlug || '');
+        if (decoded.photo) {
+          setProductPhoto(decoded.photo);
+        }
+        setLandingSlug(decoded.landingSlug || idParam || '');
       } catch (e) {
         console.error("Error parsing product data", e);
       }
+    } else if (idParam) {
+      setLandingSlug(idParam);
+      loadLandingData(idParam);
     }
   }, []);
 
-  useEffect(() => {
-    if (landingSlug) {
-      loadLandingData();
-    }
-  }, [landingSlug]);
-
-  const loadLandingData = async () => {
-    if (!landingSlug) return;
+  const loadLandingData = async (landingId?: string) => {
+    const id = landingId || landingSlug;
+    if (!id) return;
     
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${API_URL}/public/landing/${landingSlug}`);
+      const response = await fetch(`${API_URL}/public/landing/${id}`);
       
       if (response.ok) {
         const result = await response.json();
         if (result.landing?.content) {
           setContent(result.landing.content);
         }
-        if (result.landing?.products && result.landing.products.length > 0) {
+        if (!productPhoto && result.landing?.products && result.landing.products.length > 0) {
           const mainPhoto = result.landing.products[0].photos?.[result.landing.products[0].mainPhoto || 0];
           if (mainPhoto) {
             setProductPhoto(mainPhoto);
@@ -91,24 +111,30 @@ export default function SkinovaOrderPage() {
     e.preventDefault();
     if (!product) return;
 
+    const landingId = product.landingSlug || product.landingId || landingSlug;
+    if (!landingId) {
+      alert('Erreur: ID du produit manquant');
+      setSubmitting(false);
+      return;
+    }
+
     setSubmitting(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${API_URL}/shop/${product.landingSlug}/order`, {
+      const response = await fetch(`${API_URL}/shop/${landingId}/order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productName: product.name,
           productPrice: product.price,
-          productPhoto: productPhoto,
           customerName: formData.lastName,
           customer_firstname: formData.firstName,
           phone: formData.phone,
           wilaya: formData.wilaya,
+          commune: formData.commune,
           address: formData.bureau ? 'Bureau' : (formData.homeDelivery ? formData.address : ''),
           note: formData.note,
           quantity: 1,
-          landingId: product.landingSlug,
         }),
       });
 
@@ -116,12 +142,13 @@ export default function SkinovaOrderPage() {
         const result = await response.json();
         const newOrderId = result.order?.id || result.orderId || result.id || 'CMD-' + Date.now();
         
-        const params = new URLSearchParams(window.location.search);
-        const productData = params.get("product");
-        const confirmParams = new URLSearchParams();
-        if (productData) confirmParams.set("product", productData);
-        confirmParams.set("orderId", newOrderId);
-        window.location.href = `/template/skinova/confirmation?${confirmParams.toString()}`;
+        const confirmData = {
+          ...product,
+          orderId: newOrderId,
+        };
+        sessionStorage.setItem('confirmData', JSON.stringify(confirmData));
+        
+        window.location.href = `/template/skinova/confirmation`;
         return;
       } else {
         const errorText = await response.text();
@@ -294,8 +321,8 @@ export default function SkinovaOrderPage() {
               <h3 className="text-xs tracking-widest uppercase text-stone-500 mb-6">Récapitulatif</h3>
               
               <div className="aspect-square bg-stone-100 mb-6 overflow-hidden">
-                {productPhoto ? (
-                  <img src={productPhoto} alt={product.name} className="w-full h-full object-cover" />
+                {product?.photo || productPhoto ? (
+                  <img src={product?.photo || productPhoto} alt={product?.name || 'Produit'} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <span className="text-4xl opacity-20">⚗️</span>

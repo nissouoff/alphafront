@@ -1,5 +1,4 @@
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, updateProfile } from 'firebase/auth';
-import { auth, db, saveUserToRTDB } from './firebase';
+import { supabase } from './supabase';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const FETCH_TIMEOUT = 20000;
@@ -26,7 +25,7 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 
   } catch (error: any) {
     clearTimeout(timeoutId);
     
-    if (retries > 0 && (error.name === 'AbortError' || error.message.includes('fetch') || error.message.includes('network') || !navigator.onLine)) {
+    if (retries > 0 && (error.name === 'AbortError' || error.message.includes('fetch') || error.message.includes('network') || (typeof window !== 'undefined' && !navigator.onLine))) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       return fetchWithRetry(url, options, retries - 1);
     }
@@ -79,122 +78,102 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export async function login(email: string, password: string): Promise<ApiResponse<FirebaseUser>> {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    localStorage.setItem('auth_user', JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      name: user.displayName,
-    }));
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+
+    const user: FirebaseUser = {
+      uid: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || null,
+    };
+
+    localStorage.setItem('auth_user', JSON.stringify(user));
 
     return {
       message: 'Connexion réussie !',
-      user: {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName,
-      },
-      token: await user.getIdToken(),
+      user,
+      token: data.session?.access_token,
     };
   } catch (error: any) {
     console.error('Login error:', error);
-    const errorCode = error.code || '';
-    
-    if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-email' || errorCode === 'auth/too-many-requests') {
-      throw new Error('Email ou mot de passe incorrect');
-    }
-    if (errorCode === 'auth/network-request-failed') {
-      throw new Error('Erreur de connexion réseau. Vérifiez votre connexion internet.');
-    }
-    throw new Error(error.message || 'Identifiants incorrects');
+    throw new Error(error.message || 'Échec de la connexion');
   }
 }
 
 export async function register(name: string, email: string, password: string): Promise<ApiResponse<FirebaseUser>> {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
-    await updateProfile(user, { displayName: name });
-    
-    await saveUserToRTDB(user.uid, name, email);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    });
 
-    localStorage.setItem('auth_user', JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      name: name,
-    }));
+    if (error) throw error;
+
+    const user: FirebaseUser = {
+      uid: data.user?.id || '',
+      email: data.user?.email,
+      name,
+    };
+
+    if (data.user) {
+      localStorage.setItem('auth_user', JSON.stringify(user));
+    }
 
     return {
       message: 'Inscription réussie !',
-      user: {
-        uid: user.uid,
-        email: user.email,
-        name: name,
-      },
-      token: await user.getIdToken(),
+      user,
+      token: data.session?.access_token,
     };
   } catch (error: any) {
     console.error('Register error:', error);
-    throw new Error(error.message || 'Erreur lors de l\'inscription');
+    throw new Error(error.message || "Échec de l'inscription");
   }
 }
 
 export async function logout(): Promise<void> {
-  try {
-    await firebaseSignOut(auth);
-    localStorage.removeItem('auth_user');
-  } catch (error) {
-    console.error('Logout error:', error);
-  }
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  localStorage.removeItem('auth_user');
+}
+
+export async function getCurrentUser(): Promise<FirebaseUser | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  
+  return {
+    uid: user.id,
+    email: user.email,
+    name: user.user_metadata?.name || null,
+  };
 }
 
 export async function getCurrentUserToken(): Promise<string | null> {
-  const user = auth.currentUser;
-  if (!user) return null;
-  return await user.getIdToken();
-}
-
-export async function uploadImage(file: File, folder: string = 'general'): Promise<{ url: string }> {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-
-  const token = await user.getIdToken();
-  
-  const reader = new FileReader();
-  const base64 = await new Promise<string>((resolve, reject) => {
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
-  const response = await fetchWithRetry(`${API_URL}/upload`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ image: base64, folder }),
-  });
-
-  const data = await handleResponse(response);
-  
-  return { url: base64 };
-}
-
-export function setUser(user: FirebaseUser): void {
-  localStorage.setItem('auth_user', JSON.stringify(user));
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
 }
 
 export function getStoredUser(): FirebaseUser | null {
   if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem('auth_user');
+  if (!stored) return null;
   try {
-    const userStr = localStorage.getItem('auth_user');
-    return userStr ? JSON.parse(userStr) : null;
-  } catch (e) {
+    return JSON.parse(stored);
+  } catch {
     return null;
   }
+}
+
+export function setUser(user: FirebaseUser): void {
+  localStorage.setItem('auth_user', JSON.stringify(user));
 }
 
 export function clearStoredUser(): void {
@@ -323,90 +302,54 @@ export async function unpublishLanding(id: string): Promise<{ message: string }>
   return handleResponse(response);
 }
 
-export async function getPublicLanding(slug: string): Promise<{ landing: Landing }> {
-  const response = await fetchWithRetry(`${API_URL}/shop/${slug}`, {
-    method: 'GET',
+export async function uploadImage(file: File, folder: string = 'general'): Promise<{ url: string }> {
+  const token = await getCurrentUserToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('folder', folder);
+
+  const response = await fetchWithRetry(`${API_URL}/upload`, {
+    method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
+    body: formData,
   });
-  return handleResponse(response);
-}
 
-export async function trackView(slug: string, ip?: string): Promise<void> {
-  await fetchWithRetry(`${API_URL}/shop/${slug}/view`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ip }),
-  }).catch(() => {});
-}
-
-export async function addReview(slug: string, name: string, rating: number, comment?: string): Promise<void> {
-  await fetchWithRetry(`${API_URL}/shop/${slug}/review`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, rating, comment }),
-  }).catch(() => {});
-}
-
-interface OrderPayload {
-  productId?: string;
-  productName: string;
-  productPrice: string;
-  productPhoto?: string | null;
-  quantity: number;
-  customerName: string;
-  customer_firstname?: string;
-  phone: string;
-  wilaya: string;
-  commune?: string;
-  address?: string;
-  note?: string;
-}
-
-export async function createOrder(slug: string, data: OrderPayload): Promise<{ message: string; order: any }> {
-  const response = await fetchWithRetry(`${API_URL}/shop/${slug}/order`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
   return handleResponse(response);
 }
 
 export interface Order {
   id: string;
-  landingSlug: string;
-  landingId?: string;
-  landingName?: string;
-  productId: string;
-  productName: string;
-  productPrice: string;
-  productPhoto?: string | null;
+  landingId: string;
+  productId?: string;
+  productName?: string;
+  productPrice?: string;
+  productPhoto?: string;
   quantity: number;
-  total?: string;
+  total: number;
   customerName: string;
-  customer_firstname?: string;
-  phone: string;
-  wilaya: string;
+  customerPhone: string;
+  customerWilaya?: string;
+  customerCommune?: string;
+  customerAddress?: string;
+  phone?: string;
+  wilaya?: string;
   commune?: string;
   address?: string;
-  note?: string;
-  status: string;
-  returnLoss?: string;
-  returnReason?: string;
+  status: 'pending' | 'processing' | 'paid' | 'returned' | 'deleted';
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }
 
-export async function getOrders(limit?: number, landingSlug?: string): Promise<{ orders: Order[] }> {
+export async function getOrders(landingId?: string): Promise<{ orders: Order[] }> {
   const headers = await getAuthHeaders();
   let url = `${API_URL}/orders`;
-  const params = new URLSearchParams();
-  if (limit) params.append('limit', limit.toString());
-  if (landingSlug) params.append('landingSlug', landingSlug);
-  if (params.toString()) url += `?${params.toString()}`;
-  
+  if (landingId) {
+    url += `?landing_id=${landingId}`;
+  }
   const response = await fetchWithRetry(url, {
     method: 'GET',
     headers,
@@ -414,41 +357,41 @@ export async function getOrders(limit?: number, landingSlug?: string): Promise<{
   return handleResponse(response);
 }
 
-export async function updateOrderStatus(
-  orderId: string, 
-  status: string, 
-  returnLoss?: string,
-  blockReason?: string
-): Promise<{ message: string }> {
-  try {
-    const headers = await getAuthHeaders();
-    const body: any = { status };
-    if (returnLoss) body.returnLoss = returnLoss;
-    if (blockReason) body.blockReason = blockReason;
-    
-    const response = await fetchWithRetry(`${API_URL}/orders/${orderId}/status`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(body),
-    });
-    
-    if (!response.ok) {
-      const text = await response.text();
-      let message = `Erreur ${response.status}`;
-      try {
-        const data = JSON.parse(text);
-        message = data.message || message;
-      } catch {}
-      throw new Error(message);
-    }
-    
-    return await response.json();
-  } catch (error: any) {
-    if (error.message.includes('Non authentifié')) {
-      throw new Error('Session expirée. Veuillez vous reconnecter.');
-    }
-    throw error;
-  }
+export async function updateOrderStatus(orderId: string, status: string): Promise<{ message: string }> {
+  const headers = await getAuthHeaders();
+  const response = await fetchWithRetry(`${API_URL}/orders/${orderId}/status`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ status }),
+  });
+  return handleResponse(response);
+}
+
+export async function createOrder(orderData: {
+  landingId: string;
+  productId?: string;
+  productName?: string;
+  productPrice?: string;
+  productPhoto?: string;
+  quantity?: number;
+  total: number;
+  customer: {
+    name: string;
+    phone: string;
+    wilaya?: string;
+    commune?: string;
+    address?: string;
+  };
+  shippingAddress?: string;
+}): Promise<{ order: Order; message: string }> {
+  const response = await fetchWithRetry(`${API_URL}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderData),
+  });
+  return handleResponse(response);
 }
 
 export async function deleteOrder(orderId: string): Promise<{ message: string }> {
@@ -460,7 +403,35 @@ export async function deleteOrder(orderId: string): Promise<{ message: string }>
   return handleResponse(response);
 }
 
-export async function getWilayas(): Promise<{ wilayas: string[] }> {
-  const response = await fetchWithRetry(`${API_URL}/wilayas`);
-  return handleResponse(response);
+export async function resetPassword(email: string): Promise<{ message: string }> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/reset-password`,
+  });
+  
+  if (error) throw error;
+  return { message: 'Email de réinitialisation envoyé !' };
+}
+
+export async function updatePassword(newPassword: string): Promise<{ message: string }> {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  
+  if (error) throw error;
+  return { message: 'Mot de passe mis à jour !' };
+}
+
+export async function updateUserProfile(name: string): Promise<{ message: string }> {
+  const { error } = await supabase.auth.updateUser({
+    data: { name },
+  });
+  
+  if (error) throw error;
+  
+  const currentUser = getStoredUser();
+  if (currentUser) {
+    setUser({ ...currentUser, name });
+  }
+  
+  return { message: 'Profil mis à jour !' };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -9,14 +9,19 @@ import { getLanding, updateLanding, publishLanding, unpublishLanding, Product } 
 interface LandingContent {
   logo: string;
   brandName: string;
+  brandNameAr?: string;
   heroTitle: string;
+  heroTitleAr?: string;
   heroSubtitle: string;
+  heroSubtitleAr?: string;
   ctaButton: string;
+  ctaButtonAr?: string;
   contactEmail: string;
   contactWhatsapp: string;
   contactInstagram: string;
   contactFacebook: string;
   footerText: string;
+  footerTextAr?: string;
   heroBgColor: string;
   ctaBgColor: string;
   heroTextColor: string;
@@ -30,23 +35,70 @@ interface LandingContent {
   sectionBg: string;
   showStats: boolean;
   showReviews: boolean;
-  satisfactionRate?: string;
-  clientsCount?: string;
   showGuarantee: boolean;
   guaranteeText?: string;
+  guaranteeTextAr?: string;
+  showTrustBar?: boolean;
+  trustBarText?: string;
+  trustBarTextAr?: string;
+  satisfactionRate?: string;
+  clientsCount?: string;
+  feature1Title?: string;
+  feature1TitleAr?: string;
+  feature1Desc?: string;
+  feature1DescAr?: string;
+  feature2Title?: string;
+  feature2TitleAr?: string;
+  feature2Desc?: string;
+  feature2DescAr?: string;
+  feature3Title?: string;
+  feature3TitleAr?: string;
+  feature3Desc?: string;
+  feature3DescAr?: string;
+  faq1Question?: string;
+  faq1QuestionAr?: string;
+  faq1Answer?: string;
+  faq1AnswerAr?: string;
+  faq2Question?: string;
+  faq2QuestionAr?: string;
+  faq2Answer?: string;
+  faq2AnswerAr?: string;
+  faq3Question?: string;
+  faq3QuestionAr?: string;
+  faq3Answer?: string;
+  faq3AnswerAr?: string;
+  featuresSectionTitle?: string;
+  featuresSectionTitleAr?: string;
+  featuresSectionSubtitle?: string;
+  featuresSectionSubtitleAr?: string;
+  offerTitle?: string;
+  offerTitleAr?: string;
+  offerSubtitle?: string;
+  offerSubtitleAr?: string;
+  reviewsTitle?: string;
+  reviewsTitleAr?: string;
+  ctaFinalTitle?: string;
+  ctaFinalTitleAr?: string;
+  ctaFinalSubtitle?: string;
+  ctaFinalSubtitleAr?: string;
 }
 
 const DEFAULT_CONTENT: LandingContent = {
   logo: '',
   brandName: 'Ma Marque',
+  brandNameAr: 'علامتي',
   heroTitle: 'Votre beauté commence ici',
+  heroTitleAr: 'جمالك يبدأ من هنا',
   heroSubtitle: 'Découvrez notre collection exclusive de soins cosmétiques naturels.',
+  heroSubtitleAr: 'اكتشف مجموعتنا الحصرية من مستحضرات التجميل الطبيعية.',
   ctaButton: 'Commander maintenant',
+  ctaButtonAr: 'اطلب الآن',
   contactEmail: 'contact@exemple.com',
   contactWhatsapp: '',
   contactInstagram: '',
   contactFacebook: '',
   footerText: 'Des soins naturels pour une peau radieuse.',
+  footerTextAr: 'عناية طبيعية لبشرة مشرقة.',
   heroBgColor: 'bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50',
   ctaBgColor: 'bg-gradient-to-r from-rose-500 to-orange-500',
   heroTextColor: 'text-zinc-900',
@@ -62,19 +114,121 @@ const DEFAULT_CONTENT: LandingContent = {
   showReviews: true,
   showGuarantee: false,
   guaranteeText: 'Garantie 30 jours',
+  guaranteeTextAr: 'ضمان 30 يوماً',
+  showTrustBar: true,
+  trustBarText: 'Paiement sécurisé',
+  trustBarTextAr: 'دفع آمن',
+  satisfactionRate: '98',
+  clientsCount: '15K+',
+  feature1Title: 'Rapide',
+  feature1TitleAr: 'سريع',
+  feature1Desc: 'Résultats visibles immédiatement',
+  feature1DescAr: 'نتائج فورية',
+  feature2Title: 'Simple',
+  feature2TitleAr: 'سهل',
+  feature2Desc: 'Utilisable par tout le monde',
+  feature2DescAr: 'مناسب للجميع',
+  feature3Title: 'Puissant',
+  feature3TitleAr: 'فعال',
+  feature3Desc: 'Performance haut niveau',
+  feature3DescAr: 'أداء عالي',
+  faq1Question: 'Livraison ?',
+  faq1QuestionAr: 'التوصيل؟',
+  faq1Answer: 'Livraison rapide sous 24-48h partout en Algérie.',
+  faq1AnswerAr: 'توصيل سريع خلال 24-48 ساعة في الجزائر.',
+  faq2Question: 'Garantie ?',
+  faq2QuestionAr: 'الضمان؟',
+  faq2Answer: 'Garantie satisfait ou remboursé sous 30 jours.',
+  faq2AnswerAr: 'ضمان استرداد الأموال خلال 30 يوماً.',
+  faq3Question: 'Utilisation ?',
+  faq3QuestionAr: 'الاستخدام؟',
+  faq3Answer: 'Simple et intuitif, adapté à tous les niveaux.',
+  faq3AnswerAr: 'بسيط وسهل، مناسب للجميع.',
+  featuresSectionTitle: 'Titre section avantages',
+  featuresSectionTitleAr: 'عنوان قسم المميزات',
+  featuresSectionSubtitle: 'Sous-titre section avantages',
+  featuresSectionSubtitleAr: 'وصف قسم المميزات',
+  offerTitle: 'Offre limitée',
+  offerTitleAr: 'عرض محدود',
+  offerSubtitle: 'Sous-titre offre',
+  offerSubtitleAr: 'وصف العرض',
+  reviewsTitle: 'Avis clients',
+  reviewsTitleAr: 'آراء العملاء',
+  ctaFinalTitle: 'Prête à transformer votre peau ?',
+  ctaFinalTitleAr: 'هل أنت مستعدة لتحويل بشرتك؟',
+  ctaFinalSubtitle: 'Rejoignez plus de 15K+ utilisatrices satisfaites et découvrez l\'excellence Skinova.',
+  ctaFinalSubtitleAr: 'انضمي إلى أكثر من 15K+ مستخدمة satisfaites واكتشفي تميز Skinova.',
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  brandName: 'Nom de la marque (FR)',
+  brandNameAr: 'Nom de la marque (AR)',
+  heroTitle: 'Titre principal (FR)',
+  heroTitleAr: 'Titre principal (AR)',
+  heroSubtitle: 'Sous-titre (FR)',
+  heroSubtitleAr: 'Sous-titre (AR)',
+  ctaButton: 'Texte du bouton (FR)',
+  ctaButtonAr: 'Texte du bouton (AR)',
+  footerText: 'Texte footer (FR)',
+  footerTextAr: 'Texte footer (AR)',
+  trustBarText: 'Texte trust bar (FR)',
+  trustBarTextAr: 'Texte trust bar (AR)',
+  guaranteeText: 'Texte garantie (FR)',
+  guaranteeTextAr: 'Texte garantie (AR)',
+  satisfactionRate: 'Taux de satisfaction',
+  clientsCount: 'Nombre de clients',
+  feature1Title: 'Titre avantage 1 (FR)',
+  feature1TitleAr: 'Titre avantage 1 (AR)',
+  feature1Desc: 'Description avantage 1 (FR)',
+  feature1DescAr: 'Description avantage 1 (AR)',
+  feature2Title: 'Titre avantage 2 (FR)',
+  feature2TitleAr: 'Titre avantage 2 (AR)',
+  feature2Desc: 'Description avantage 2 (FR)',
+  feature2DescAr: 'Description avantage 2 (AR)',
+  feature3Title: 'Titre avantage 3 (FR)',
+  feature3TitleAr: 'Titre avantage 3 (AR)',
+  feature3Desc: 'Description avantage 3 (FR)',
+  feature3DescAr: 'Description avantage 3 (AR)',
+  faq1Question: 'Question FAQ 1 (FR)',
+  faq1QuestionAr: 'Question FAQ 1 (AR)',
+  faq1Answer: 'Réponse FAQ 1 (FR)',
+  faq1AnswerAr: 'Réponse FAQ 1 (AR)',
+  faq2Question: 'Question FAQ 2 (FR)',
+  faq2QuestionAr: 'Question FAQ 2 (AR)',
+  faq2Answer: 'Réponse FAQ 2 (FR)',
+  faq2AnswerAr: 'Réponse FAQ 2 (AR)',
+  faq3Question: 'Question FAQ 3 (FR)',
+  faq3QuestionAr: 'Question FAQ 3 (AR)',
+  faq3Answer: 'Réponse FAQ 3 (FR)',
+  faq3AnswerAr: 'Réponse FAQ 3 (AR)',
+  featuresSectionTitle: 'Titre section avantages (FR)',
+  featuresSectionTitleAr: 'Titre section avantages (AR)',
+  featuresSectionSubtitle: 'Sous-titre section avantages (FR)',
+  featuresSectionSubtitleAr: 'Sous-titre section avantages (AR)',
+  offerTitle: 'Titre offre (FR)',
+  offerTitleAr: 'Titre offre (AR)',
+  offerSubtitle: 'Sous-titre offre (FR)',
+  offerSubtitleAr: 'Sous-titre offre (AR)',
+  reviewsTitle: 'Titre avis (FR)',
+  reviewsTitleAr: 'Titre avis (AR)',
+  ctaFinalTitle: 'Titre CTA final (FR)',
+  ctaFinalTitleAr: 'Titre CTA final (AR)',
+  ctaFinalSubtitle: 'Sous-titre CTA final (FR)',
+  ctaFinalSubtitleAr: 'Sous-titre CTA final (AR)',
 };
 
 export default function LandingEditorPage() {
   const searchParams = useSearchParams();
   const landingId = searchParams.get('id');
   const template = searchParams.get('template') || 'cosmetic';
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'product' | 'contact'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'product' | 'contact' | 'preview'>('content');
   const [isPublished, setIsPublished] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
 
   const [content, setContent] = useState<LandingContent>(DEFAULT_CONTENT);
   const [product, setProduct] = useState<Product>({
@@ -94,6 +248,28 @@ export default function LandingEditorPage() {
   useEffect(() => {
     loadLanding();
   }, [landingId]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'selectField') {
+        const field = event.data.field;
+        setSelectedField(field);
+        setActiveTab('content');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'updateContent',
+        content,
+        product
+      }, '*');
+    }
+  }, [content, product]);
 
   const loadLanding = async () => {
     if (!landingId) {
@@ -231,9 +407,9 @@ export default function LandingEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white">
+    <div className="min-h-screen bg-zinc-900 text-white flex flex-col">
       {/* Header */}
-      <header className="bg-zinc-800 border-b border-zinc-700 sticky top-0 z-50">
+      <header className="bg-zinc-800 border-b border-zinc-700 shrink-0">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/dashboard" className="text-zinc-400 hover:text-white transition-colors p-2 -ml-2">
@@ -276,27 +452,13 @@ export default function LandingEditorPage() {
 
             {isPublished ? (
               <div className="flex items-center gap-1 sm:gap-2">
-                <span className="hidden sm:inline px-2 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-xs sm:text-sm font-medium">
-                  Publiée
-                </span>
+                <span className="hidden sm:inline px-2 py-1.5 bg-green-500/20 text-green-400 rounded-lg text-xs sm:text-sm font-medium">Publiée</span>
                 <span className="sm:hidden w-2 h-2 bg-green-500 rounded-full"></span>
-                <button
-                  onClick={handleUnpublish}
-                  disabled={publishing}
-                  className="px-2 sm:px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-xs sm:text-sm"
-                >
-                  Dépub
-                </button>
+                <button onClick={handleUnpublish} disabled={publishing} className="px-2 sm:px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-xs sm:text-sm">Dépub</button>
               </div>
             ) : (
-              <button
-                onClick={handlePublish}
-                disabled={publishing}
-                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-all flex items-center gap-1 sm:gap-2 text-sm"
-              >
-                {publishing ? (
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
+              <button onClick={handlePublish} disabled={publishing} className="px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-all flex items-center gap-1 sm:gap-2 text-sm">
+                {publishing ? <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : (
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
@@ -316,14 +478,13 @@ export default function LandingEditorPage() {
               { id: 'content', label: 'Contenu', icon: '📝' },
               { id: 'product', label: 'Produit', icon: '🛍️' },
               { id: 'contact', label: 'Contact', icon: '📞' },
+              { id: 'preview', label: 'Aperçu', icon: '👁️' },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`py-3 sm:py-4 px-2 sm:px-3 border-b-2 transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === tab.id
-                    ? 'border-purple-500 text-white'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-300'
+                  activeTab === tab.id ? 'border-purple-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-300'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -335,10 +496,42 @@ export default function LandingEditorPage() {
       </div>
 
       {/* Content */}
-      <main className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
+      <main className="flex-1 overflow-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
         {/* Content Tab */}
         {activeTab === 'content' && (
           <div className="space-y-4 sm:space-y-6 md:space-y-8">
+            {/* Selected Field Editor */}
+            {selectedField && (
+              <div className="bg-purple-500/20 border border-purple-500/50 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span className="text-purple-300 font-medium">
+                      {FIELD_LABELS[selectedField] || selectedField}
+                    </span>
+                  </div>
+                  <button onClick={() => setSelectedField(null)} className="text-zinc-400 hover:text-white text-xl">×</button>
+                </div>
+                {selectedField === 'heroSubtitle' || selectedField === 'footerText' ? (
+                  <textarea
+                    value={(content[selectedField as keyof LandingContent] as string) ?? ''}
+                    onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={(content[selectedField as keyof LandingContent] as string) ?? ''}
+                    onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
+                    className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                  />
+                )}
+              </div>
+            )}
+
             <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
               <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Identité de la marque</h2>
               <div className="space-y-4 sm:space-y-6">
@@ -348,12 +541,7 @@ export default function LandingEditorPage() {
                     {content.logo ? (
                       <div className="relative">
                         <img src={content.logo} alt="Logo" className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover" />
-                        <button
-                          onClick={() => setContent(prev => ({ ...prev, logo: '' }))}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                        >
-                          ×
-                        </button>
+                        <button onClick={() => setContent(prev => ({ ...prev, logo: '' }))} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">×</button>
                       </div>
                     ) : (
                       <label className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-dashed border-zinc-600 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors">
@@ -371,127 +559,225 @@ export default function LandingEditorPage() {
                     )}
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Nom de la marque</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Nom de la marque (FR)</label>
+                    <input type="text" value={content.brandName} onChange={(e) => setContent(prev => ({ ...prev, brandName: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Nom de la marque (AR) العربية</label>
+                    <input type="text" value={content.brandNameAr || ''} onChange={(e) => setContent(prev => ({ ...prev, brandNameAr: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Titre principal (FR)</label>
+                    <input type="text" value={content.heroTitle} onChange={(e) => setContent(prev => ({ ...prev, heroTitle: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Titre principal (AR) العربية</label>
+                    <input type="text" value={content.heroTitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, heroTitleAr: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre (FR)</label>
+                    <textarea value={content.heroSubtitle} onChange={(e) => setContent(prev => ({ ...prev, heroSubtitle: e.target.value }))} rows={2} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre (AR) العربية</label>
+                    <textarea value={content.heroSubtitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, heroSubtitleAr: e.target.value }))} rows={2} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Texte du bouton (FR)</label>
+                    <input type="text" value={content.ctaButton} onChange={(e) => setContent(prev => ({ ...prev, ctaButton: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Texte du bouton (AR) العربية</label>
+                    <input type="text" value={content.ctaButtonAr || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaButtonAr: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base text-right" dir="rtl" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Options d&apos;affichage</h2>
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showStats !== false} onChange={(e) => setContent(prev => ({ ...prev, showStats: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
+                  <div>
+                    <span className="text-white font-medium">Afficher les statistiques</span>
+                    <p className="text-xs text-zinc-500 mt-1">Basé sur les avis clients et commandes</p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showReviews !== false} onChange={(e) => setContent(prev => ({ ...prev, showReviews: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
+                  <span className="text-white font-medium">Afficher les commentaires clients</span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showGuarantee || false} onChange={(e) => setContent(prev => ({ ...prev, showGuarantee: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5" />
+                  <span className="text-white font-medium">Afficher la garantie</span>
+                </label>
+                {content.showGuarantee && (
+                  <div className="ml-8 mt-2 space-y-2">
                     <input
                       type="text"
-                      value={content.brandName}
-                      onChange={(e) => setContent(prev => ({ ...prev, brandName: e.target.value }))}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
+                      value={content.guaranteeText || ''}
+                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeText: e.target.value }))}
+                      placeholder="Texte garantie (FR)"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-2">Email de contact</label>
                     <input
-                      type="email"
-                      value={content.contactEmail}
-                      onChange={(e) => setContent(prev => ({ ...prev, contactEmail: e.target.value }))}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
+                      type="text"
+                      value={content.guaranteeTextAr || ''}
+                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeTextAr: e.target.value }))}
+                      placeholder="Texte garantie (AR) العربية"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm text-right"
+                      dir="rtl"
                     />
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Section Avantages */}
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Avantages (FR / AR)</h2>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 1 (FR)</label>
+                    <input type="text" value={content.feature1Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.feature1Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 1 (AR) العربية</label>
+                    <input type="text" value={content.feature1TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.feature1DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 2 (FR)</label>
+                    <input type="text" value={content.feature2Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.feature2Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 2 (AR) العربية</label>
+                    <input type="text" value={content.feature2TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.feature2DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 3 (FR)</label>
+                    <input type="text" value={content.feature3Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.feature3Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 3 (AR) العربية</label>
+                    <input type="text" value={content.feature3TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.feature3DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Trust Bar */}
             <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Section Héro</h2>
-              <div className="space-y-4 sm:space-y-6">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Trust Bar (FR / AR)</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Titre principal</label>
-                  <input
-                    type="text"
-                    value={content.heroTitle}
-                    onChange={(e) => setContent(prev => ({ ...prev, heroTitle: e.target.value }))}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                  />
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Trust Bar (FR)</label>
+                  <input type="text" value={content.trustBarText || ''} onChange={(e) => setContent(prev => ({ ...prev, trustBarText: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre</label>
-                  <textarea
-                    value={content.heroSubtitle}
-                    onChange={(e) => setContent(prev => ({ ...prev, heroSubtitle: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Bouton CTA</label>
-                  <input
-                    type="text"
-                    value={content.ctaButton}
-                    onChange={(e) => setContent(prev => ({ ...prev, ctaButton: e.target.value }))}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                  />
-                </div>
-
-                <div className="border-t border-zinc-700 pt-4 sm:pt-6 space-y-4">
-                  <div>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={content.showStats !== false}
-                        onChange={(e) => setContent(prev => ({ ...prev, showStats: e.target.checked }))}
-                        className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5"
-                      />
-                      <div>
-                        <span className="text-white font-medium">Afficher les statistiques</span>
-                        <p className="text-xs text-zinc-500 mt-1">Basé sur les avis clients et commandes</p>
-                      </div>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={content.showReviews !== false}
-                        onChange={(e) => setContent(prev => ({ ...prev, showReviews: e.target.checked }))}
-                        className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5"
-                      />
-                      <span className="text-white font-medium">Afficher les commentaires clients</span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={content.showGuarantee || false}
-                        onChange={(e) => setContent(prev => ({ ...prev, showGuarantee: e.target.checked }))}
-                        className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5"
-                      />
-                      <span className="text-white font-medium">Afficher la garantie</span>
-                    </label>
-                  </div>
-
-                  {content.showGuarantee && (
-                    <div className="ml-8 bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                      <label className="block text-sm font-medium text-zinc-400 mb-2">Texte de la garantie</label>
-                      <input
-                        type="text"
-                        value={content.guaranteeText || 'Garantie 30 jours'}
-                        onChange={(e) => setContent(prev => ({ ...prev, guaranteeText: e.target.value }))}
-                        placeholder="Ex: Garantie 30 jours"
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-green-500 focus:outline-none text-sm"
-                      />
-                    </div>
-                  )}
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Trust Bar (AR) العربية</label>
+                  <input type="text" value={content.trustBarTextAr || ''} onChange={(e) => setContent(prev => ({ ...prev, trustBarTextAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
                 </div>
               </div>
             </div>
 
+            {/* FAQ */}
             <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Pied de page</h2>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Texte du footer</label>
-                <textarea
-                  value={content.footerText}
-                  onChange={(e) => setContent(prev => ({ ...prev, footerText: e.target.value }))}
-                  rows={3}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base"
-                />
+              <h2 className="text-lg sm:text-xl font-bold mb-4">FAQ (FR / AR)</h2>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (FR)</label>
+                    <input type="text" value={content.faq1Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.faq1Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (AR) العربية</label>
+                    <input type="text" value={content.faq1QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.faq1AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (FR)</label>
+                    <input type="text" value={content.faq2Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.faq2Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (AR) العربية</label>
+                    <input type="text" value={content.faq2QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.faq2AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (FR)</label>
+                    <input type="text" value={content.faq3Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea value={content.faq3Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (AR) العربية</label>
+                    <input type="text" value={content.faq3QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
+                    <textarea value={content.faq3AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">Footer (FR / AR)</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Footer (FR)</label>
+                  <input type="text" value={content.footerText} onChange={(e) => setContent(prev => ({ ...prev, footerText: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Footer (AR) العربية</label>
+                  <input type="text" value={content.footerTextAr || ''} onChange={(e) => setContent(prev => ({ ...prev, footerTextAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Final Section (Skinova) */}
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4">CTA Final (FR / AR)</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Titre CTA Final (FR)</label>
+                  <input type="text" value={content.ctaFinalTitle || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalTitle: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Titre CTA Final (AR) العربية</label>
+                  <input type="text" value={content.ctaFinalTitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalTitleAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre CTA Final (FR)</label>
+                  <input type="text" value={content.ctaFinalSubtitle || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalSubtitle: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre CTA Final (AR) العربية</label>
+                  <input type="text" value={content.ctaFinalSubtitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalSubtitleAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
+                </div>
               </div>
             </div>
           </div>
@@ -506,168 +792,60 @@ export default function LandingEditorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-2">Nom du produit</label>
-                    <input
-                      type="text"
-                      value={product.name}
-                      onChange={(e) => setProduct(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
+                    <input type="text" value={product.name} onChange={(e) => setProduct(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-2">Prix (DA)</label>
-                    <input
-                      type="text"
-                      value={product.price}
-                      onChange={(e) => setProduct(prev => ({ ...prev, price: e.target.value }))}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
+                    <input type="text" value={product.price} onChange={(e) => setProduct(prev => ({ ...prev, price: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
                   </div>
                 </div>
-
                 <div className="border-t border-zinc-700 pt-4 sm:pt-6">
                   <label className="flex items-start gap-3 cursor-pointer mb-4">
-                    <input
-                      type="checkbox"
-                      checked={product.isOnSale || false}
-                      onChange={(e) => setProduct(prev => ({ 
-                        ...prev, 
-                        isOnSale: e.target.checked,
-                        oldPrice: e.target.checked && !prev.oldPrice ? prev.price : prev.oldPrice
-                      }))}
-                      className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-red-500 focus:ring-red-500 mt-0.5"
-                    />
+                    <input type="checkbox" checked={product.isOnSale || false} onChange={(e) => setProduct(prev => ({ ...prev, isOnSale: e.target.checked, oldPrice: e.target.checked && !prev.oldPrice ? prev.price : prev.oldPrice }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-red-500 focus:ring-red-500 mt-0.5" />
                     <span className="text-white font-medium">Produit en solde</span>
                   </label>
-
                   {product.isOnSale && (
                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Ancien prix (DA)</label>
-                          <input
-                            type="text"
-                            value={product.oldPrice || ''}
-                            onChange={(e) => setProduct(prev => ({ ...prev, oldPrice: e.target.value }))}
-                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-red-500 focus:outline-none text-sm sm:text-base"
-                            placeholder="Ex: 5000"
-                          />
+                          <input type="text" value={product.oldPrice || ''} onChange={(e) => setProduct(prev => ({ ...prev, oldPrice: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-red-500 focus:outline-none text-sm" placeholder="Ex: 5000" />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-zinc-400 mb-2">Réduction</label>
                           <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-red-400 font-bold text-base sm:text-lg">
-                            {product.oldPrice && product.price ? 
-                              `-${Math.round((1 - parseFloat(product.price) / parseFloat(product.oldPrice)) * 100)}%` 
-                              : '—'}
+                            {product.oldPrice && product.price ? `-${Math.round((1 - parseFloat(product.price) / parseFloat(product.oldPrice)) * 100)}%` : '—'}
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
-                  <textarea
-                    value={product.description}
-                    onChange={(e) => setProduct(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Biographie / Détails</label>
-                  <textarea
-                    value={product.biography}
-                    onChange={(e) => setProduct(prev => ({ ...prev, biography: e.target.value }))}
-                    rows={5}
-                    placeholder="Avantages, ingrédients, mode d'emploi..."
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base"
-                  />
+                  <textarea value={product.description} onChange={(e) => setProduct(prev => ({ ...prev, description: e.target.value }))} rows={3} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base" />
                 </div>
               </div>
             </div>
 
             <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
               <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Photos du produit</h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-4">
-                  {product.photos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={photo}
-                        alt={`Photo ${index + 1}`}
-                        className={`w-full aspect-square object-cover rounded-lg sm:rounded-xl ${
-                          product.mainPhoto === index ? 'ring-2 ring-purple-500' : ''
-                        }`}
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 rounded-lg sm:rounded-xl">
-                        <button
-                          onClick={() => setProduct(prev => ({ ...prev, mainPhoto: index }))}
-                          className="px-2 py-1 bg-white text-black text-xs rounded-lg"
-                        >
-                          Principal
-                        </button>
-                        <button
-                          onClick={() => handleRemovePhoto(index)}
-                          className="px-2 py-1 bg-red-500 text-white text-xs rounded-lg"
-                        >
-                          Supprimer
-                        </button>
-                      </div>
-                      {product.mainPhoto === index && (
-                        <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-purple-500 text-white text-[10px] sm:text-xs rounded-lg sm:rounded-md">
-                          Principal
-                        </span>
-                      )}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-4">
+                {product.photos.map((photo, index) => (
+                  <div key={index} className="relative group">
+                    <img src={photo} alt={`Photo ${index + 1}`} className={`w-full aspect-square object-cover rounded-lg sm:rounded-xl ${product.mainPhoto === index ? 'ring-2 ring-purple-500' : ''}`} />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 rounded-lg sm:rounded-xl">
+                      <button onClick={() => setProduct(prev => ({ ...prev, mainPhoto: index }))} className="px-2 py-1 bg-white text-black text-xs rounded-lg">Principal</button>
+                      <button onClick={() => handleRemovePhoto(index)} className="px-2 py-1 bg-red-500 text-white text-xs rounded-lg">Supprimer</button>
                     </div>
-                  ))}
-                  
-                  <label className="aspect-square border-2 border-dashed border-zinc-600 rounded-lg sm:rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors">
-                    <svg className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span className="text-xs sm:text-sm text-zinc-500 mt-1 sm:mt-2">Ajouter</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(e, 'photo')}
-                    />
-                  </label>
-                </div>
-                
-                {product.photos.length === 0 && (
-                  <p className="text-zinc-500 text-sm text-center py-6 sm:py-8">
-                    Ajoutez au moins une photo du produit
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Stock</h2>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={product.unlimitedStock}
-                    onChange={(e) => setProduct(prev => ({ ...prev, unlimitedStock: e.target.checked }))}
-                    className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-purple-500 focus:ring-purple-500"
-                  />
-                  <span className="text-zinc-300">Stock illimité</span>
-                </label>
-                
-                {!product.unlimitedStock && (
-                  <div className="w-full sm:w-32">
-                    <input
-                      type="number"
-                      value={product.stock}
-                      onChange={(e) => setProduct(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
+                    {product.mainPhoto === index && <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-purple-500 text-white text-[10px] sm:text-xs rounded-lg sm:rounded-md">Principal</span>}
                   </div>
-                )}
+                ))}
+                <label className="aspect-square border-2 border-dashed border-zinc-600 rounded-lg sm:rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                  <span className="text-xs sm:text-sm text-zinc-500 mt-1 sm:mt-2">Ajouter</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photo')} />
+                </label>
               </div>
             </div>
           </div>
@@ -681,79 +859,33 @@ export default function LandingEditorPage() {
               <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">WhatsApp</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.296-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={content.contactWhatsapp}
-                      onChange={(e) => setContent(prev => ({ ...prev, contactWhatsapp: e.target.value }))}
-                      placeholder="+213 555 123 456"
-                      className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
-                  </div>
+                  <input type="text" value={content.contactWhatsapp} onChange={(e) => setContent(prev => ({ ...prev, contactWhatsapp: e.target.value }))} placeholder="+213 555 123 456" className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Instagram</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-pink-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={content.contactInstagram}
-                      onChange={(e) => setContent(prev => ({ ...prev, contactInstagram: e.target.value }))}
-                      placeholder="@votre_compte"
-                      className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
-                  </div>
+                  <input type="text" value={content.contactInstagram} onChange={(e) => setContent(prev => ({ ...prev, contactInstagram: e.target.value }))} placeholder="@votre_compte" className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Facebook</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={content.contactFacebook}
-                      onChange={(e) => setContent(prev => ({ ...prev, contactFacebook: e.target.value }))}
-                      placeholder="https://facebook.com/..."
-                      className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Email</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-zinc-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="email"
-                      value={content.contactEmail}
-                      onChange={(e) => setContent(prev => ({ ...prev, contactEmail: e.target.value }))}
-                      placeholder="contact@votresite.com"
-                      className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base"
-                    />
-                  </div>
+                  <input type="email" value={content.contactEmail} onChange={(e) => setContent(prev => ({ ...prev, contactEmail: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" />
                 </div>
               </div>
             </div>
           </div>
         )}
+
+        {/* Preview Tab - Always mounted to prevent reload */}
+        <div className={`h-[calc(100vh-160px)] bg-white rounded-xl overflow-hidden border border-zinc-700 relative ${activeTab === 'preview' ? 'block' : 'hidden'}`}>
+          <iframe
+            ref={iframeRef}
+            src={`/template/${template}?id=${landingId}&editMode=true`}
+            className="w-full h-full border-0"
+            title="Preview"
+          />
+          <div className="absolute bottom-4 left-4 px-3 py-2 bg-purple-500/90 text-white text-sm rounded-lg shadow-lg">
+            Cliquez sur le texte pour l&apos;éditer
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -33,6 +33,18 @@ const DashboardContext = createContext<DashboardData>({
 
 export const useDashboardData = () => useContext(DashboardContext);
 
+interface PageTitleContextType {
+  pageTitle: string;
+  setPageTitle: (title: string) => void;
+}
+
+const PageTitleContext = createContext<PageTitleContextType>({
+  pageTitle: '',
+  setPageTitle: () => {},
+});
+
+export const usePageTitle = () => useContext(PageTitleContext);
+
 const bg = "bg-[var(--theme-bg)]";
 const text = "text-[var(--theme-text)]";
 const textMuted = "text-[var(--theme-text-muted)]";
@@ -56,6 +68,7 @@ export default function DashboardLayout({
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pageTitle, setPageTitle] = useState('');
 
   const fetchData = async () => {
     if (!user) return;
@@ -197,6 +210,7 @@ export default function DashboardLayout({
   const isDetailPage = pathname.includes('/landing/') || pathname.includes('/boutique/');
 
   const getPageTitle = () => {
+    if (pageTitle) return pageTitle;
     if (pathname === "/dashboard") return t("dashboard");
     if (pathname.startsWith("/dashboard/landings")) return t("landings");
     if (pathname.startsWith("/dashboard/boutiques")) return t("boutiques");
@@ -204,12 +218,10 @@ export default function DashboardLayout({
     if (pathname.startsWith("/dashboard/analytics")) return "Analytics";
     if (pathname.startsWith("/dashboard/settings")) return t("settings");
     if (pathname.includes("/dashboard/landing/")) {
-      const id = pathname.split("/dashboard/landing/")[1];
-      return id ? id.split("-").slice(0, -2).join(" ") : "Landing";
+      return "Landing";
     }
     if (pathname.includes("/dashboard/boutique/")) {
-      const id = pathname.split("/dashboard/boutique/")[1];
-      return id ? id.split("-").slice(0, -2).join(" ") : "Boutique";
+      return "Boutique";
     }
     return t("dashboard");
   };
@@ -224,6 +236,7 @@ export default function DashboardLayout({
 
   return (
     <DashboardContext.Provider value={{ landings, orders, loading, refetch: fetchData }}>
+    <PageTitleContext.Provider value={{ pageTitle, setPageTitle }}>
     <div className={`min-h-screen bg-[var(--theme-bg)] ${isDetailPage ? '' : 'flex'}`}>
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-red-500 text-white px-4 py-2 z-[200] flex items-center justify-center gap-2">
@@ -416,6 +429,7 @@ export default function DashboardLayout({
         <div className="p-4 md:p-6 lg:p-8">{children}</div>
       </div>
     </div>
+    </PageTitleContext.Provider>
     </DashboardContext.Provider>
   );
 }

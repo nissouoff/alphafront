@@ -12,31 +12,45 @@ interface Content {
 interface OrderProduct {
   name: string;
   price: string;
-  landingSlug: string;
+  landingSlug?: string;
+  landingId?: string;
 }
 
 export default function SkinovaConfirmationPage() {
   const [content, setContent] = useState<Content | null>(null);
   const [product, setProduct] = useState<OrderProduct | null>(null);
   const [orderId, setOrderId] = useState<string>('');
+  const [landingId, setLandingId] = useState<string>('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const productData = params.get("product");
     const orderIdParam = params.get("orderId");
     
-    if (productData) {
+    // Try sessionStorage first
+    const stored = sessionStorage.getItem('confirmData');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setProduct(parsed);
+        setOrderId(parsed.orderId || orderIdParam || '');
+        const id = parsed.landingId || parsed.landingSlug || '';
+        setLandingId(id);
+        loadLandingData(id);
+      } catch (e) {
+        console.error("Error parsing confirm data:", e);
+      }
+    } else if (productData) {
       try {
         const decoded = JSON.parse(atob(decodeURIComponent(productData)));
         setProduct(decoded);
-        loadLandingData(decoded.landingSlug);
+        setOrderId(orderIdParam || '');
+        const id = decoded.landingSlug || decoded.landingId || '';
+        setLandingId(id);
+        loadLandingData(id);
       } catch (e) {
         console.error("Error parsing product data", e);
       }
-    }
-    
-    if (orderIdParam) {
-      setOrderId(orderIdParam);
     }
   }, []);
 
@@ -152,14 +166,8 @@ export default function SkinovaConfirmationPage() {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => window.location.href = `/template/skinova?id=${landingId}`}
             className="px-8 py-4 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors font-sans"
-          >
-            Retour au dashboard
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-8 py-4 bg-white text-stone-900 text-xs tracking-widest uppercase font-medium border border-stone-300 hover:border-stone-900 transition-colors font-sans"
           >
             Nouvelle commande
           </button>

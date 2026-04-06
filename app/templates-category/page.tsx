@@ -34,6 +34,13 @@ const CATEGORY_TEMPLATES = {
         previewUrl: "/template/skinova?preview=true",
         features: ["Style luxe", "Typographie élégante", "Images plein écran"],
       },
+      {
+        id: "vibe",
+        name: "Vibe",
+        description: "Design moderne noir avec accent orange dynamique",
+        previewUrl: "/template/vibe?preview=true",
+        features: ["Style dark mode", "Accent orange", "Conversion optimisée"],
+      },
     ],
   },
   fashion: {
@@ -201,7 +208,7 @@ function TemplateCard({ template, onSelect }: {
             }}
           >
             <iframe
-              src={`/api/template-html/${template.id}`}
+              src={template.previewUrl}
               className="w-full h-full border-none bg-white shadow-xl"
               title={`Preview of ${template.name}`}
               loading="lazy"
@@ -413,7 +420,13 @@ function TemplatesCategoryContent() {
       if (result.landing?.id) {
         toast.success("Landing créée !");
         setShowModal(false);
-        router.push(`/editor/landing?id=${result.landing.id}&template=${templateCategory}`);
+        
+        // Redirect to template-specific editor if available
+        if (selectedTemplate === "vibe") {
+          router.push(`/editor/vibe?id=${result.landing.id}`);
+        } else {
+          router.push(`/editor/landing?id=${result.landing.id}&template=${templateCategory}`);
+        }
       } else {
         toast.error("Erreur lors de la création");
       }

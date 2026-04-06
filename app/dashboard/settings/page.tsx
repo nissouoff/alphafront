@@ -145,7 +145,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className={`min-h-screen ${classes.bg}`}>
+    <div className={`min-h-screen ${classes.bg} border ${classes.border} rounded-2xl m-2 sm:m-4 p-4 sm:p-6`}>
       <div className="mb-6">
         <h1 className={`text-2xl sm:text-3xl font-bold ${classes.text}`}>Parametres</h1>
         <p className={`text-sm sm:text-base ${classes.textMuted}`}>Gerez vos preferences</p>

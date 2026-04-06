@@ -606,7 +606,174 @@ export async function GET(
     </section>
   </div>
 </body>
-</html>`
+</html>`,
+    
+    vibe: `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe - Landing Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    const { motion } = Motion;
+    
+    function CheckIcon() {
+      return React.createElement('svg', { 
+        className: 'text-orange-500 w-5 h-5', 
+        fill: 'none', 
+        stroke: 'currentColor', 
+        viewBox: '0 0 24 24'
+      }, 
+        React.createElement('path', { 
+          strokeLinecap: 'round', 
+          strokeLinejoin: 'round', 
+          strokeWidth: '2', 
+          d: 'M5 13l4 4L19 7' 
+        })
+      );
+    }
+    
+    function App() {
+      return React.createElement('div', { className: 'min-h-screen bg-black text-white' },
+        // HERO
+        React.createElement('section', { className: 'grid md:grid-cols-2 items-center gap-10 px-6 py-16 md:py-24 max-w-7xl mx-auto' },
+          React.createElement('div', null,
+            React.createElement(motion.h1, { 
+              initial: { opacity: 0, y: -30 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.6 },
+              className: 'text-3xl md:text-6xl font-bold leading-tight mb-6'
+            }, 'Boost ton quotidien avec un produit unique'),
+            
+            React.createElement(motion.p, {
+              initial: { opacity: 0 },
+              animate: { opacity: 1 },
+              transition: { delay: 0.3 },
+              className: 'text-gray-300 mb-6 text-base md:text-lg'
+            }, 'Une solution moderne, rapide et efficace concue pour des resultats visibles immediatement.'),
+            
+            React.createElement('ul', { className: 'space-y-3 mb-8' },
+              ['Resultat rapide', 'Ultra simple', 'Garantie satisfait'].map((item, i) =>
+                React.createElement('li', { key: i, className: 'flex items-center gap-2' },
+                  React.createElement(CheckIcon),
+                  item
+                )
+              )
+            ),
+            
+            React.createElement('div', { className: 'flex flex-col sm:flex-row gap-4' },
+              React.createElement('button', { 
+                className: 'bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-2xl shadow-xl cursor-pointer font-semibold transition-colors'
+              }, 'Acheter maintenant'),
+              React.createElement('span', { className: 'text-sm text-gray-400 flex items-center' }, 'Paiement securise')
+            )
+          ),
+          
+          React.createElement(motion.div, {
+            initial: { opacity: 0, scale: 0.8 },
+            animate: { opacity: 1, scale: 1 },
+            transition: { duration: 0.6 },
+            className: 'flex justify-center'
+          },
+            React.createElement('div', { 
+              className: 'rounded-2xl w-80 h-80 md:w-[450px] md:h-[450px] bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-[0_0_40px_rgba(255,115,0,0.4)]' },
+              React.createElement('span', { className: 'text-8xl md:text-9xl' }, '🚀')
+            )
+          )
+        ),
+        
+        // TRUST BAR
+        React.createElement('section', { className: 'py-4 text-center text-sm text-gray-400 border-y border-gray-800' },
+          '+10 000 clients satisfaits | Livraison rapide | Support 24/7'
+        ),
+        
+        // FEATURES
+        React.createElement('section', { className: 'py-16 md:py-24 px-6 bg-black' },
+          React.createElement('div', { className: 'text-center mb-12' },
+            React.createElement('h2', { className: 'text-2xl md:text-4xl font-bold mb-4' }, 'Pourquoi choisir ce produit ?'),
+            React.createElement('p', { className: 'text-gray-400' }, 'Pense pour la performance maximale')
+          ),
+          
+          React.createElement('div', { className: 'grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto' },
+            [
+              { title: 'Rapide', desc: 'Resultats visibles immediatement' },
+              { title: 'Simple', desc: 'Utilisable par tout le monde' },
+              { title: 'Puissant', desc: 'Performance haut niveau' }
+            ].map((item, i) =>
+              React.createElement(motion.div, {
+                key: i,
+                whileHover: { scale: 1.05 },
+                className: 'bg-gray-900 border border-gray-800 rounded-2xl p-6 text-center'
+              },
+                React.createElement('h3', { className: 'text-xl font-semibold mb-2 text-orange-500' }, item.title),
+                React.createElement('p', { className: 'text-gray-400' }, item.desc)
+              )
+            )
+          )
+        ),
+        
+        // SOCIAL PROOF
+        React.createElement('section', { className: 'py-16 md:py-24 px-6' },
+          React.createElement('h2', { className: 'text-2xl md:text-4xl font-bold text-center mb-12' }, 'Avis clients'),
+          
+          React.createElement('div', { className: 'grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto' },
+            [1, 2, 3].map((i) =>
+              React.createElement(motion.div, { 
+                key: i, 
+                whileHover: { scale: 1.03 },
+                className: 'bg-gray-900 border border-gray-800 rounded-2xl p-6'
+              },
+                React.createElement('p', { className: 'mb-4 text-gray-300' }, '"Incroyable, je recommande a 100%."'),
+                React.createElement('div', { className: 'font-semibold text-orange-500' }, 'Client verifie')
+              )
+            )
+          )
+        ),
+        
+        // OFFER
+        React.createElement('section', { className: 'py-20 px-6 text-center bg-gradient-to-b from-black to-gray-900' },
+          React.createElement('h2', { className: 'text-3xl md:text-5xl font-bold mb-6' }, 'Offre limitee 🔥'),
+          React.createElement('p', { className: 'text-gray-400 mb-6' }, 'Ne rate pas cette opportunite'),
+          React.createElement('div', { className: 'text-4xl font-bold text-orange-500 mb-6' }, '3500 DA'),
+          React.createElement('button', { 
+            className: 'bg-orange-500 hover:bg-orange-600 px-10 py-6 text-lg rounded-2xl shadow-xl cursor-pointer font-semibold transition-colors'
+          }, 'Commander maintenant')
+        ),
+        
+        // FAQ
+        React.createElement('section', { className: 'py-16 px-6 max-w-4xl mx-auto' },
+          React.createElement('h2', { className: 'text-2xl md:text-3xl font-bold text-center mb-10' }, 'FAQ'),
+          React.createElement('div', { className: 'space-y-6' },
+            ['Livraison ?', 'Garantie ?', 'Utilisation ?'].map((q, i) =>
+              React.createElement('div', { key: i, className: 'border-b border-gray-800 pb-4' },
+                React.createElement('h3', { className: 'font-semibold mb-2' }, q),
+                React.createElement('p', { className: 'text-gray-400 text-sm' }, 'Reponse claire pour rassuer le client.')
+              )
+            )
+          )
+        ),
+        
+        // FOOTER
+        React.createElement('footer', { className: 'py-10 text-center text-sm text-gray-500 border-t border-gray-800' },
+          '© 2026 - Tous droits reserves'
+        )
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  </script>
+</body>
+</html>`,
   };
 
   const template = templates[id] || templates.cosmetic;

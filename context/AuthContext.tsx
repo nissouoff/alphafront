@@ -2,19 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { logout as apiLogout, getStoredUser, setUser as setStoredUser, clearStoredUser } from "@/lib/api";
-
-interface User {
-  uid: string;
-  email: string | null;
-  name: string | null;
-}
+import { supabase, User } from "@/lib/supabase";
 
 interface AuthContextType {
   user: User | null;
-  firebaseUser: FirebaseUser | null;
   loading: boolean;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -24,54 +15,67 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        setFirebaseUser(fbUser);
-        const userData: User = {
-          uid: fbUser.uid,
-          email: fbUser.email,
-          name: fbUser.displayName,
-        };
-        setUser(userData);
-        setStoredUser(userData);
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || null,
+          });
+        }
+      } catch (error) {
+        console.error('Auth init error:', error);
+      }
+      setLoading(false);
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || null,
+        });
       } else {
-        setFirebaseUser(null);
         setUser(null);
-        clearStoredUser();
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
 
   const refreshUser = async () => {
-    if (firebaseUser) {
-      const userData: User = {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        name: firebaseUser.displayName,
-      };
-      setUser(userData);
-      setStoredUser(userData);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || null,
+        });
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
     }
   };
 
   const logout = async () => {
-    await apiLogout();
+    await supabase.auth.signOut();
     setUser(null);
-    setFirebaseUser(null);
-    clearStoredUser();
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

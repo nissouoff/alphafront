@@ -167,7 +167,7 @@ export default function LandingsPage() {
                     </button>
                   )}
                   <Link 
-                    href={`/editor/landing?id=${landing.id}&template=${landing.type}`}
+                    href={landing.type === 'eclat' ? `/editor/eclat?id=${landing.id}` : `/editor/landing?id=${landing.id}&template=${landing.type}`}
                     className="px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer active:bg-indigo-700"
                   >
                     {t("edit")}
