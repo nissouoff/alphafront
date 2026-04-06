@@ -324,6 +324,7 @@ export async function uploadImage(file: File, folder: string = 'general'): Promi
 export interface Order {
   id: string;
   landingId: string;
+  landingSlug?: string;
   productId?: string;
   productName?: string;
   productPrice?: string;
