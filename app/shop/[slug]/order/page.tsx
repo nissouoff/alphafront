@@ -186,20 +186,21 @@ function OrderPageContent({ slug }: { slug: string }) {
 
     try {
       const result = await createOrder(
-        slug,
         {
+          landingId: slug,
           productId: product.id,
           productName: product.name,
           productPrice: product.price,
-          productPhoto: product.photos?.[product.mainPhoto || 0] || null,
-          customerName: formData.customerName || (formData as any).customer_name,
-          customer_firstname: formData.customer_firstname,
-          phone: cleanPhone,
-          wilaya: formData.wilaya,
-          commune: formData.commune || '',
-          address: formData.address || '',
-          note: formData.notes || '',
+          productPhoto: product.photos?.[product.mainPhoto || 0] || '',
           quantity: 1,
+          total: parseFloat(product.price || '0'),
+          customer: {
+            name: formData.customerName || (formData as any).customer_name || '',
+            phone: cleanPhone,
+            wilaya: formData.wilaya,
+            commune: formData.commune || '',
+            address: formData.address || '',
+          },
         }
       );
 

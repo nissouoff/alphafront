@@ -148,7 +148,7 @@ export default function LandingOrdersPage() {
     returned: filteredOrders.filter(o => o.status === 'returned').length,
   };
 
-  const parsePrice = (price: string) => {
+  const parsePrice = (price?: string) => {
     const num = parseFloat(price?.replace(/[^0-9.]/g, '') || '0');
     return isNaN(num) ? 0 : num;
   };
@@ -159,7 +159,8 @@ export default function LandingOrdersPage() {
 
   const confirmedOrders = filteredOrders.filter(o => ['paid'].includes(o.status)).length;
 
-  const getLandingName = (landingSlug: string) => {
+  const getLandingName = (landingSlug?: string) => {
+    if (!landingSlug) return 'Landing Page';
     const landing = landings.find(l => l.slug === landingSlug);
     return landing?.name || 'Landing Page';
   };
@@ -427,7 +428,7 @@ export default function LandingOrdersPage() {
                             </div>
                             <p className={`font-medium ${styles.text} truncate`}>{order.productName}</p>
                             <p className={`text-sm ${styles.textMuted}`}>
-                              {order.customerName} {order.customer_firstname || ''} • {order.wilaya}
+                              {order.customerName} • {order.wilaya}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0">
@@ -476,8 +477,7 @@ export default function LandingOrdersPage() {
               <div className="p-4 bg-zinc-700/50 rounded-xl">
                 <h3 className="font-semibold text-white mb-3">Client</h3>
                 <div className="space-y-2 text-sm">
-                  <p><span className="text-zinc-400">Nom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
-                  <p><span className="text-zinc-400">Prénom:</span> <span className="text-white">{selectedOrder.customer_firstname || '-'}</span></p>
+                  <p><span className="text-zinc-400">Nom et Prénom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
                   <p><span className="text-zinc-400">Téléphone:</span> <span className="text-white">{selectedOrder.phone}</span></p>
                   <p><span className="text-zinc-400">Wilaya:</span> <span className="text-white">{selectedOrder.wilaya}</span></p>
                   {selectedOrder.commune && <p><span className="text-zinc-400">Commune:</span> <span className="text-white">{selectedOrder.commune}</span></p>}

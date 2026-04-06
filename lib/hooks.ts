@@ -29,7 +29,7 @@ export function useOrders(options?: { limit?: number; landingSlug?: string }) {
     isLoading: false,
     error: null,
     refetch: async () => {
-      return await api.getOrders(options?.limit, options?.landingSlug);
+      return await api.getOrders(options?.landingSlug);
     },
   };
 }

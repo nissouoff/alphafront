@@ -321,8 +321,8 @@ export default function SkinovaOrderPage() {
               <h3 className="text-xs tracking-widest uppercase text-stone-500 mb-6">Récapitulatif</h3>
               
               <div className="aspect-square bg-stone-100 mb-6 overflow-hidden">
-                {product?.photo || productPhoto ? (
-                  <img src={product?.photo || productPhoto} alt={product?.name || 'Produit'} className="w-full h-full object-cover" />
+                {(product?.photo || productPhoto) ? (
+                  <img src={product?.photo || productPhoto || ''} alt={product?.name || 'Produit'} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <span className="text-4xl opacity-20">⚗️</span>

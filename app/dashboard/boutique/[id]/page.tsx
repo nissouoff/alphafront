@@ -472,7 +472,7 @@ export default function BoutiqueDetailPage() {
                         </div>
                         <p className={`font-medium ${text} truncate`}>{order.productName}</p>
                         <p className={`text-sm ${textMuted}`}>
-                          {order.customerName} {order.customer_firstname && `• ${order.customer_firstname}`} • {order.phone} • {order.wilaya}
+                          {order.customerName} • {order.phone} • {order.wilaya}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -678,8 +678,7 @@ export default function BoutiqueDetailPage() {
               <div className="p-4 bg-zinc-700/50 rounded-xl">
                 <h3 className="font-semibold text-white mb-3">Client</h3>
                 <div className="space-y-2 text-sm">
-                  <p><span className="text-zinc-400">Nom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
-                  <p><span className="text-zinc-400">Prénom:</span> <span className="text-white">{selectedOrder.customer_firstname || '-'}</span></p>
+                  <p><span className="text-zinc-400">Nom et Prénom:</span> <span className="text-white">{selectedOrder.customerName}</span></p>
                   <p><span className="text-zinc-400">Téléphone:</span> <span className="text-white">{selectedOrder.phone}</span></p>
                   <p><span className="text-zinc-400">Wilaya:</span> <span className="text-white">{selectedOrder.wilaya}</span></p>
                   {selectedOrder.commune && <p><span className="text-zinc-400">Commune:</span> <span className="text-white">{selectedOrder.commune}</span></p>}

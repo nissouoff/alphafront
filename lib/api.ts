@@ -87,8 +87,8 @@ export async function login(email: string, password: string): Promise<ApiRespons
 
     const user: FirebaseUser = {
       uid: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata?.name || null,
+      email: data.user.email ?? null,
+      name: data.user.user_metadata?.name ?? null,
     };
 
     localStorage.setItem('auth_user', JSON.stringify(user));
@@ -120,8 +120,8 @@ export async function register(name: string, email: string, password: string): P
 
     const user: FirebaseUser = {
       uid: data.user?.id || '',
-      email: data.user?.email,
-      name,
+      email: data.user?.email ?? null,
+      name: name || null,
     };
 
     if (data.user) {
@@ -151,8 +151,8 @@ export async function getCurrentUser(): Promise<FirebaseUser | null> {
   
   return {
     uid: user.id,
-    email: user.email,
-    name: user.user_metadata?.name || null,
+    email: user.email ?? null,
+    name: user.user_metadata?.name ?? null,
   };
 }
 
@@ -341,6 +341,8 @@ export interface Order {
   commune?: string;
   address?: string;
   status: string;
+  returnLoss?: string;
+  note?: string;
   createdAt: string;
   updatedAt: string;
 }

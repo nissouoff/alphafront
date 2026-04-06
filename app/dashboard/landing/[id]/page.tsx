@@ -132,7 +132,7 @@ export default function LandingDetailPage() {
 
   useEffect(() => {
     if (landing) {
-      setPageTitle(landing.name || landing.brandName || 'Landing');
+      setPageTitle(landing.name || landing.content?.brandName || 'Landing');
     }
   }, [landing, setPageTitle]);
 
