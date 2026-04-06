@@ -358,12 +358,15 @@ export async function getOrders(landingId?: string): Promise<{ orders: Order[] }
   return handleResponse(response);
 }
 
-export async function updateOrderStatus(orderId: string, status: string): Promise<{ message: string }> {
+export async function updateOrderStatus(orderId: string, status: string, returnLoss?: string, blockReason?: string): Promise<{ message: string }> {
   const headers = await getAuthHeaders();
+  const body: any = { status };
+  if (returnLoss) body.returnLoss = returnLoss;
+  if (blockReason) body.blockReason = blockReason;
   const response = await fetchWithRetry(`${API_URL}/orders/${orderId}/status`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(body),
   });
   return handleResponse(response);
 }
