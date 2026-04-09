@@ -27,6 +27,10 @@ interface Content {
   heroSubtitleAr?: string;
   ctaButton: string;
   ctaButtonAr?: string;
+  exploreButton: string;
+  exploreButtonAr?: string;
+  collection2026Text: string;
+  collection2026TextAr?: string;
   contactEmail: string;
   contactWhatsapp: string;
   contactInstagram: string;
@@ -57,6 +61,7 @@ interface Content {
   ctaFinalTitleAr?: string;
   ctaFinalSubtitle?: string;
   ctaFinalSubtitleAr?: string;
+  paymentText?: string;
 }
 
 export default function SkinovaTemplatePage() {
@@ -84,6 +89,10 @@ function SkinovaTemplate() {
     heroSubtitleAr: 'تركيبات ثورية لبشرة متحولة. سر البشرة المثالية أصبح مكشوفاً.',
     ctaButton: 'Découvrir la Collection',
     ctaButtonAr: 'اكتشف المجموعة',
+    exploreButton: 'Explorer',
+    exploreButtonAr: 'استكشف',
+    collection2026Text: 'Collection Exclusive 2026',
+    collection2026TextAr: 'مجموعة حصرية 2026',
     contactEmail: 'contact@skinova.com',
     contactWhatsapp: '',
     contactInstagram: '',
@@ -123,7 +132,8 @@ function SkinovaTemplate() {
       { question: 'Combien de temps dure un flacon ?', answer: 'En utilisation normale, un flacon dure environ 2 mois. Nous recommandons une cure de 3 mois pour des résultats optimaux.' },
       { question: 'Le produit est-il adapté aux peaux sensibles ?', answer: 'Oui, nos formules sont hypoallergéniques et testées dermatologiquement. Convient à tous les types de peau, même les plus sensibles.' },
       { question: 'Expédiez-vous en dehors de l\'Algérie ?', answer: 'Actuellement, nous expédions uniquement en Algérie. La livraison est effectuée sous 3-5 jours ouvrables.' }
-    ]
+    ],
+    paymentText: 'Paiement à la livraison',
   });
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -163,15 +173,19 @@ function SkinovaTemplate() {
     : content.clientsCount || '0';
 
   const isPreview = searchParams.get('preview') === 'true';
-  const isEditMode = searchParams.get('editMode') === 'true';
+  const isEditMode = searchParams.get('editMode') === 'true' || (typeof window !== 'undefined' && localStorage.getItem('isSkinovaEditMode') === 'true');
 
   const handleEditClick = (field: string) => {
-    if (isEditMode && window.parent !== window) {
-      window.parent.postMessage({ type: 'selectField', field }, '*');
+    if (isEditMode) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'selectField', field }, '*');
+      } else {
+        window.dispatchEvent(new CustomEvent('selectField', { detail: { field } }));
+      }
     }
   };
 
-  const editableStyle = isEditMode ? "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:ring-offset-2 rounded transition-all" : "";
+  const editableStyle = isEditMode ? "cursor-pointer ring-2 ring-purple-400 ring-offset-2 rounded transition-all" : "";
 
   const previewData = {
     product: {
@@ -187,15 +201,12 @@ function SkinovaTemplate() {
   };
 
   useEffect(() => {
-    if (isPreview) {
-      setContent(prev => ({ ...prev, ...previewContent }));
-      setProducts([previewData.product]);
-      setSelectedPhotoIndex(0);
-      setLoading(false);
+    if (isPreview || isEditMode) {
+      loadData();
     } else {
       loadData();
     }
-  }, []);
+  }, [isPreview, isEditMode]);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -222,6 +233,10 @@ function SkinovaTemplate() {
     heroSubtitleAr: 'تركيبات ثورية لبشرة متحولة.',
     ctaButton: 'Découvrir la Collection',
     ctaButtonAr: 'اكتشف المجموعة',
+    exploreButton: 'Explorer',
+    exploreButtonAr: 'استكشف',
+    collection2026Text: 'Collection Exclusive 2026',
+    collection2026TextAr: 'مجموعة حصرية 2026',
     contactEmail: 'contact@skinova.com',
     contactWhatsapp: '',
     contactInstagram: '',
@@ -271,7 +286,7 @@ function SkinovaTemplate() {
     if (dataParam) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(dataParam)));
-        if (decoded.content) setContent(decoded.content);
+        if (decoded.content) setContent({ ...content, ...decoded.content, paymentText: decoded.content.paymentText || 'Paiement à la livraison', exploreButton: decoded.content.exploreButton || 'Explorer', exploreButtonAr: decoded.content.exploreButtonAr || 'استكشف' });
         if (decoded.products) setProducts(decoded.products);
       } catch (error) {
         console.error('Error parsing preview data:', error);
@@ -283,7 +298,7 @@ function SkinovaTemplate() {
     if (landingId) {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-        const response = await fetch(`${API_URL}/public/landing/${landingId}`);
+        const response = await fetch(`${API_URL}/public/landing/${landingId}?preview=true`);
         
         if (!response.ok) {
           throw new Error('Failed to load landing');
@@ -291,7 +306,7 @@ function SkinovaTemplate() {
         
         const result = await response.json();
         if (result.landing) {
-          if (result.landing.content) setContent(result.landing.content);
+          if (result.landing.content) setContent({ ...content, ...result.landing.content, paymentText: result.landing.content.paymentText || 'Paiement à la livraison', exploreButton: result.landing.content.exploreButton || 'Explorer', exploreButtonAr: result.landing.content.exploreButtonAr || 'استكشف' });
           if (result.landing.products?.length > 0) {
             setProducts(result.landing.products);
             setSelectedPhotoIndex(0);
@@ -315,7 +330,7 @@ function SkinovaTemplate() {
     setSubmittingReview(true);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${API_URL}/public/landing/${landingId}/review`, {
+      const response = await fetch(`${API_URL}/landing/${landingId}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -491,8 +506,8 @@ function SkinovaTemplate() {
               <div>
                 <div className="h-px w-16 bg-stone-300 mb-8 animate-line origin-left"></div>
                 
-                <p className="text-xs tracking-[0.3em] uppercase text-stone-500 mb-6 opacity-0 animate-fade-in-up">
-                  {lang === 'ar' ? 'مجموعة حصرية 2026' : 'Collection Exclusive 2026'}
+                <p onClick={() => handleEditClick('collection2026Text')} className={`text-xs tracking-[0.3em] uppercase text-stone-500 mb-6 opacity-0 animate-fade-in-up ${editableStyle}`}>
+                  {lang === 'ar' ? (content.collection2026TextAr || content.collection2026Text) : content.collection2026Text}
                 </p>
                 
                 <h1 onClick={() => handleEditClick('heroTitle')} className={`text-5xl sm:text-6xl lg:text-7xl font-serif font-medium leading-[1.1] ${content.heroTextColor} mb-8 opacity-0 animate-fade-in-up delay-100 ${editableStyle}`}>
@@ -508,12 +523,12 @@ function SkinovaTemplate() {
                 <div className="flex flex-wrap gap-6 opacity-0 animate-fade-in-up delay-400">
                   <button
                     onClick={() => { if (!isEditMode) product && handleOrder(product); }}
-                    className="inline-block px-10 py-4 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors animate-pulse-glow"
+                    className={`inline-block px-10 py-4 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors animate-pulse-glow ${editableStyle}`}
                   >
                     <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{lang === 'ar' ? (content.ctaButtonAr || content.ctaButton) : content.ctaButton}</span>
                   </button>
-                  <a href="#collection" className="inline-block px-10 py-4 border border-stone-300 text-stone-700 text-xs tracking-widest uppercase font-medium hover:border-stone-900 transition-colors">
-                    {lang === 'ar' ? 'استكشف' : 'Explorer'}
+                  <a href="#collection" onClick={(e) => { if (isEditMode) { e.preventDefault(); handleEditClick('exploreButton'); } }} className={`inline-block px-10 py-4 border border-stone-300 text-stone-700 text-xs tracking-widest uppercase font-medium hover:border-stone-900 transition-colors ${editableStyle}`}>
+                    {lang === 'ar' ? (content.exploreButtonAr || content.exploreButton) : content.exploreButton}
                   </a>
                 </div>
               </div>
@@ -632,14 +647,14 @@ function SkinovaTemplate() {
                     <svg className="w-5 h-5 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span className="text-sm text-stone-700">Paiement à la livraison</span>
+                    <span onClick={() => handleEditClick('paymentText')} className={`text-sm text-stone-700 ${editableStyle}`}>{content.paymentText}</span>
                   </div>
                 </div>
 
                 {/* CTA */}
                 <button
                   onClick={() => { if (!isEditMode) handleOrder(product); }}
-                  className="w-full py-5 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors"
+                  className={`w-full py-5 bg-stone-900 text-white text-xs tracking-widest uppercase font-medium hover:bg-stone-800 transition-colors ${editableStyle}`}
                 >
                   <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{lang === 'ar' ? (content.ctaButtonAr || content.ctaButton) : content.ctaButton}</span>
                 </button>
@@ -831,7 +846,7 @@ function SkinovaTemplate() {
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
                     className="w-full px-8 py-6 flex items-center justify-between text-left"
                   >
-                    <span className="text-sm font-medium pr-8">{faq.question}</span>
+                    <span onClick={(e) => { e.stopPropagation(); handleEditClick(`faq${index + 1}Question`); }} className={`text-sm font-medium pr-8 ${editableStyle}`}>{faq.question}</span>
                     <span className="text-xl flex-shrink-0 transition-transform duration-300" style={{ transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                   </button>
                   {openFaq === index && (
@@ -870,7 +885,7 @@ function SkinovaTemplate() {
             {content.showGuarantee && content.guaranteeText && (
               <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {lang === 'ar' ? (content.guaranteeTextAr || content.guaranteeText) : content.guaranteeText}</span>
             )}
-            <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {lang === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}</span>
+            <span className="text-xs text-stone-500 tracking-widest uppercase">✓ {content.paymentText}</span>
           </div>
         </div>
       </section>

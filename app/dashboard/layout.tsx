@@ -112,6 +112,11 @@ export default function DashboardLayout({
     const newNotifications: Notification[] = [];
     const now = new Date();
 
+    // Only show notifications if we have both landings AND orders
+    if (landings.length === 0) {
+      return newNotifications;
+    }
+
     orders
       .filter((o) => o.status === "pending")
       .slice(0, 10)
@@ -120,6 +125,10 @@ export default function DashboardLayout({
         const landing = landings.find((l) => 
           l.slug === order.landingSlug || l.id === order.landingId || l.id === order.landingSlug
         );
+        
+        // Only create notification if landing exists and belongs to user
+        if (!landing) return;
+        
         const isLanding = landing?.isLanding === true;
         newNotifications.push({
           id: order.id,
@@ -151,7 +160,7 @@ export default function DashboardLayout({
     });
 
     const returnedCount = orders.filter((o) => o.status === "returned").length;
-    if (returnedCount > 0) {
+    if (returnedCount > 0 && landings.length > 0) {
       newNotifications.push({
         id: "returned",
         type: "warning",

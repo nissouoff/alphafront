@@ -104,7 +104,34 @@ export default function VibeEditorPage() {
 
   useEffect(() => {
     loadLanding();
+    if (landingId) {
+      localStorage.setItem('isVibeEditMode', 'true');
+    }
+    return () => {
+      localStorage.removeItem('isVibeEditMode');
+    };
   }, [landingId]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'selectField') {
+        const field = event.data.field;
+        setActiveTab('content');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'updateContent',
+        content,
+        product
+      }, '*');
+    }
+  }, [content, product]);
 
   const loadLanding = async () => {
     if (!landingId) {

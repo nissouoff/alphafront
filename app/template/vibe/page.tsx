@@ -219,41 +219,27 @@ function VibeTemplate() {
   const [error, setError] = useState<string | null>(null);
 
   const isPreview = searchParams.get('preview') === 'true';
-  const isEditMode = searchParams.get('editMode') === 'true';
-
+  const isEditMode = searchParams.get('editMode') === 'true' || (typeof window !== 'undefined' && localStorage.getItem('isVibeEditMode') === 'true');
+  
+  const editableStyle = isEditMode ? "cursor-pointer ring-2 ring-purple-400 ring-offset-2 rounded transition-all" : "";
+  
   const handleEditClick = (field: string) => {
-    if (isEditMode && window.parent !== window) {
-      window.parent.postMessage({ type: 'selectField', field }, '*');
-    }
-  };
-
-  const editableStyle = isEditMode ? "cursor-pointer hover:ring-2 hover:ring-orange-500 hover:ring-offset-2 hover:ring-offset-black rounded transition-all" : "";
-
-  const previewContent = DEFAULT_CONTENT;
-
-  const previewData = {
-    product: {
-      id: 'preview-1',
-      name: 'Produit Premium',
-      price: '3500',
-      description: 'Une solution moderne et efficace.',
-      biography: '',
-      photos: [],
-      mainPhoto: 0,
-      stock: 100,
-      unlimitedStock: true,
+    if (isEditMode) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'selectField', field }, '*');
+      } else {
+        window.dispatchEvent(new CustomEvent('selectField', { detail: { field } }));
+      }
     }
   };
 
   useEffect(() => {
-    if (isPreview) {
-      setContent(previewContent);
-      setProducts([previewData.product]);
-      setLoading(false);
+    if (isPreview || isEditMode) {
+      loadData();
     } else {
       loadData();
     }
-  }, []);
+  }, [isPreview, isEditMode]);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -280,7 +266,7 @@ function VibeTemplate() {
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-      const response = await fetch(`${API_URL}/public/landing/${landingId}`);
+      const response = await fetch(`${API_URL}/public/landing/${landingId}?preview=true`);
       
       if (!response.ok) {
         throw new Error('Failed to load landing');
@@ -457,9 +443,9 @@ function VibeTemplate() {
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <button 
               onClick={(e) => { e.stopPropagation(); if (!isEditMode) handleOrder(); }}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-2xl shadow-xl font-semibold transition-colors"
+              className={`bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg rounded-2xl shadow-xl font-semibold transition-colors ${editableStyle}`}
             >
-              {t.buyNow}
+              <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{getText(content.ctaButton, content.ctaButtonAr)}</span>
             </button>
             <span className="text-sm text-gray-400">{t.fastDelivery}</span>
           </div>
@@ -627,9 +613,9 @@ function VibeTemplate() {
 
             <button 
               onClick={(e) => { e.stopPropagation(); if (!isEditMode) handleOrder(); }}
-              className="bg-orange-500 hover:bg-orange-600 px-10 py-6 text-lg rounded-2xl shadow-xl font-semibold transition-colors"
+              className={`bg-orange-500 hover:bg-orange-600 px-10 py-6 text-lg rounded-2xl shadow-xl font-semibold transition-colors ${editableStyle}`}
             >
-              {t.buyNow}
+              <span onClick={(e) => { e.stopPropagation(); handleEditClick('ctaButton'); }}>{getText(content.ctaButton, content.ctaButtonAr)}</span>
             </button>
           </div>
         </section>

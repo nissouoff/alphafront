@@ -224,6 +224,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 
 export async function getLandings(type?: 'landing' | 'boutique' | 'all'): Promise<{ landings: Landing[] }> {
   const headers = await getAuthHeaders();
+  console.log('Fetching landings with headers:', { ...headers, Authorization: headers.Authorization?.substring(0, 50) + '...' });
   let url = `${API_URL}/landings`;
   if (type && type !== 'all') {
     url += `?type=${type}`;
@@ -237,14 +238,24 @@ export async function getLandings(type?: 'landing' | 'boutique' | 'all'): Promis
 
 export async function createLanding(name: string, type: string, isLanding: boolean = true): Promise<{ landing: Landing; message: string } | any> {
   const headers = await getAuthHeaders();
-  const response = await fetchWithRetry(`${API_URL}/landings`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ name, type, isLanding }),
-  });
-  const result = await handleResponse(response);
-  console.log('Create landing result:', result);
-  return result;
+  // Use faster fetch without retry for creation
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  
+  try {
+    const response = await fetch(`${API_URL}/landings`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name, type, isLanding }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    const result = await handleResponse(response);
+    return result;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 export async function getLanding(id: string): Promise<{ landing: Landing }> {
@@ -407,6 +418,48 @@ export async function deleteOrder(orderId: string): Promise<{ message: string }>
     headers,
   });
   return handleResponse(response);
+}
+
+export async function getStockStatus(slugOrId: string): Promise<{ stockStatus: Array<{
+  id: string;
+  name: string;
+  stock: number | null;
+  unlimitedStock: boolean;
+  available: boolean;
+}> }> {
+  const response = await fetchWithRetry(`${API_URL}/landing/${slugOrId}/stock`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return handleResponse(response);
+}
+
+export async function checkProductStock(slugOrId: string, productId?: string): Promise<{
+  available: boolean;
+  stock?: number | null;
+  unlimitedStock?: boolean;
+}> {
+  try {
+    const { stockStatus } = await getStockStatus(slugOrId);
+    if (stockStatus.length === 0) {
+      return { available: true, unlimitedStock: true };
+    }
+    const product = productId 
+      ? stockStatus.find(p => p.id === productId)
+      : stockStatus[0];
+    if (!product) {
+      return { available: true, unlimitedStock: true };
+    }
+    return {
+      available: product.available,
+      stock: product.stock,
+      unlimitedStock: product.unlimitedStock
+    };
+  } catch {
+    return { available: true, unlimitedStock: true };
+  }
 }
 
 export async function resetPassword(email: string): Promise<{ message: string }> {

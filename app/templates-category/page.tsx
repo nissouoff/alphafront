@@ -418,26 +418,23 @@ function TemplatesCategoryContent() {
       );
       
       if (result.landing?.id) {
-        toast.success("Landing créée !");
         setShowModal(false);
         
-        // Redirect to template-specific editor if available
-        if (selectedTemplate === "vibe") {
-          router.push(`/editor/vibe?id=${result.landing.id}`);
-        } else {
-          router.push(`/editor/landing?id=${result.landing.id}&template=${templateCategory}`);
-        }
+        // Immediately redirect to the editor
+        router.push(`/editor/landing?id=${result.landing.id}&template=${selectedTemplate}`);
       } else {
         toast.error("Erreur lors de la création");
+        setCreating(false);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Erreur lors de la création";
       toast.error(message);
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   return (
+    <>
     <div className={`min-h-screen bg-gradient-to-br ${classes.gradient}`}>
       {/* Header */}
       <header className={`${classes.headerBg} backdrop-blur-xl border-b ${classes.headerBorder} sticky top-0 z-50`}>
@@ -637,61 +634,88 @@ function TemplatesCategoryContent() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
             >
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">{category.icon}</span>
+              {creating ? (
+                <div className="text-center py-8">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <span className="text-4xl">{category.icon}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    Création en cours...
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    Votre landing page est en train d'être créée
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-rose-500 mb-4">
+                    <div className="w-5 h-5 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium">Veuillez patienter...</span>
+                  </div>
+                  <div className="space-y-3 text-left">
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Configuration du template
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <div className="w-4 h-4 border border-gray-300 border-t-rose-500 rounded-full animate-spin"></div>
+                      Création dans la base de données
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 text-sm">
+                      <div className="w-4 h-4"></div>
+                      Redirection vers l'éditeur
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {category.templates.find(t => t.id === selectedTemplate)?.name}
-                </h3>
-                <p className="text-gray-500">
-                  Donnez un nom à votre landing page
-                </p>
-              </div>
+              ) : (
+                <>
+                  <div className="text-center mb-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-3xl">{category.icon}</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {category.templates.find(t => t.id === selectedTemplate)?.name}
+                    </h3>
+                    <p className="text-gray-500">
+                      Donnez un nom à votre landing page
+                    </p>
+                  </div>
 
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nom de la landing page
-                  </label>
-                  <input
-                    type="text"
-                    value={landingName}
-                    onChange={(e) => setLandingName(e.target.value)}
-                    placeholder="Ex: Ma Boutique Cosmétique"
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100 transition-all"
-                    autoFocus
-                  />
-                </div>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Nom de la landing page
+                      </label>
+                      <input
+                        type="text"
+                        value={landingName}
+                        onChange={(e) => setLandingName(e.target.value)}
+                        placeholder="Ex: Ma Boutique Cosmétique"
+                        className="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100 transition-all"
+                        autoFocus
+                      />
+                    </div>
 
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleCreate}
-                    disabled={!landingName.trim() || creating}
-                    className="flex-1 py-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {creating ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Création...
-                      </>
-                    ) : (
-                      <>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => setShowModal(false)}
+                        className="flex-1 py-4 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={handleCreate}
+                        disabled={!landingName.trim() || creating}
+                        className="flex-1 py-4 rounded-xl font-semibold text-white shadow-lg bg-gradient-to-r from-rose-500 to-pink-500 hover:shadow-xl hover:shadow-rose-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Créer ma landing
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -714,5 +738,6 @@ function TemplatesCategoryContent() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

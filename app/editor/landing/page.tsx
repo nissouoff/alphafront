@@ -154,6 +154,24 @@ const DEFAULT_CONTENT: LandingContent = {
   offerSubtitleAr: 'وصف العرض',
   reviewsTitle: 'Avis clients',
   reviewsTitleAr: 'آراء العملاء',
+  collectionBadge: 'Collection Printemps 2026',
+  collectionBadgeAr: 'مجموعة ربيع 2026',
+  collectionTitle: 'Collection Exclusive',
+  collectionTitleAr: 'مجموعة حصرية',
+  collectionDescription: 'Des soins cosmétiques de haute qualité, formulés avec des ingrédients naturels soigneusement sélectionnés.',
+  collectionDescriptionAr: 'العناية بمستحضرات التجميل عالية الجودة',
+  fastDeliveryText: 'Livraison rapide',
+  fastDeliveryTextAr: 'توصيل سريع',
+  cashOnDeliveryText: 'Paiement à la livraison',
+  cashOnDeliveryTextAr: 'الدفع عند الاستلام',
+  questionText: 'Une question ?',
+  questionTextAr: 'سؤال؟',
+  helpText: 'Besoin d\'aide ?',
+  helpTextAr: 'تحتاج مساعدة؟',
+  supportText: 'Notre équipe est disponible 7j/7 pour répondre à toutes vos questions',
+  supportTextAr: 'فريقنا متاح 7/7 للإجابة على جميع أسئلتك',
+  supportGuarantee: 'Réponse garantie sous 24h',
+  supportGuaranteeAr: 'ضمان الرد خلال 24 ساعة',
   ctaFinalTitle: 'Prête à transformer votre peau ?',
   ctaFinalTitleAr: 'هل أنت مستعدة لتحويل بشرتك؟',
   ctaFinalSubtitle: 'Rejoignez plus de 15K+ utilisatrices satisfaites et découvrez l\'excellence Skinova.',
@@ -211,10 +229,41 @@ const FIELD_LABELS: Record<string, string> = {
   offerSubtitleAr: 'Sous-titre offre (AR)',
   reviewsTitle: 'Titre avis (FR)',
   reviewsTitleAr: 'Titre avis (AR)',
+  collectionBadge: 'Badge collection (FR)',
+  collectionBadgeAr: 'Badge collection (AR)',
+  collectionTitle: 'Titre collection (FR)',
+  collectionTitleAr: 'Titre collection (AR)',
+  collectionDescription: 'Description collection (FR)',
+  collectionDescriptionAr: 'Description collection (AR)',
+  fastDeliveryText: 'Livraison rapide (FR)',
+  fastDeliveryTextAr: 'Livraison rapide (AR)',
+  cashOnDeliveryText: 'Paiement à la livraison (FR)',
+  cashOnDeliveryTextAr: 'Paiement à la livraison (AR)',
+  questionText: 'Une question ? (FR)',
+  questionTextAr: 'Une question ? (AR)',
+  helpText: 'Besoin d\'aide ? (FR)',
+  helpTextAr: 'Besoin d\'aide ? (AR)',
+  supportText: 'Texte support (FR)',
+  supportTextAr: 'Texte support (AR)',
+  supportGuarantee: 'Garantie support (FR)',
+  supportGuaranteeAr: 'Garantie support (AR)',
   ctaFinalTitle: 'Titre CTA final (FR)',
   ctaFinalTitleAr: 'Titre CTA final (AR)',
   ctaFinalSubtitle: 'Sous-titre CTA final (FR)',
   ctaFinalSubtitleAr: 'Sous-titre CTA final (AR)',
+  paymentText: 'Paiement à la livraison',
+  exploreButton: 'Bouton Explorer (FR)',
+  exploreButtonAr: 'Bouton Explorer (AR)',
+  faq1Question: 'Question FAQ 1',
+  faq1Answer: 'Réponse FAQ 1',
+  faq2Question: 'Question FAQ 2',
+  faq2Answer: 'Réponse FAQ 2',
+  faq3Question: 'Question FAQ 3',
+  faq3Answer: 'Réponse FAQ 3',
+  faq4Question: 'Question FAQ 4',
+  faq4Answer: 'Réponse FAQ 4',
+  collection2026Text: 'Collection Exclusive 2026',
+  collection2026TextAr: 'مجموعة حصرية 2026',
 };
 
 export default function LandingEditorPage() {
@@ -514,21 +563,46 @@ export default function LandingEditorPage() {
                   </div>
                   <button onClick={() => setSelectedField(null)} className="text-zinc-400 hover:text-white text-xl">×</button>
                 </div>
-                {selectedField === 'heroSubtitle' || selectedField === 'footerText' ? (
-                  <textarea
-                    value={(content[selectedField as keyof LandingContent] as string) ?? ''}
-                    onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none"
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    value={(content[selectedField as keyof LandingContent] as string) ?? ''}
-                    onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                  />
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Français</label>
+                    {selectedField === 'heroSubtitle' || selectedField === 'footerText' ? (
+                      <textarea
+                        value={(content[selectedField as keyof LandingContent] as string) ?? ''}
+                        onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={(content[selectedField as keyof LandingContent] as string) ?? ''}
+                        onChange={(e) => setContent(prev => ({ ...prev, [selectedField]: e.target.value }))}
+                        className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">العربية</label>
+                    {selectedField === 'heroSubtitle' || selectedField === 'footerText' ? (
+                      <textarea
+                        value={(content[`${selectedField}Ar` as keyof LandingContent] as string) ?? ''}
+                        onChange={(e) => setContent(prev => ({ ...prev, [`${selectedField}Ar`]: e.target.value }))}
+                        rows={3}
+                        className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none resize-none text-right"
+                        dir="rtl"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={(content[`${selectedField}Ar` as keyof LandingContent] as string) ?? ''}
+                        onChange={(e) => setContent(prev => ({ ...prev, [`${selectedField}Ar`]: e.target.value }))}
+                        className="w-full px-3 py-2 bg-zinc-900 border border-purple-500/50 rounded-lg text-white focus:border-purple-500 focus:outline-none text-right"
+                        dir="rtl"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -707,8 +781,8 @@ export default function LandingEditorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (FR)</label>
-                    <input type="text" value={content.faq1Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.faq1Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                    <input id="input-faq1Question" type="text" value={content.faq1Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea id="input-faq1Answer" value={content.faq1Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (AR) العربية</label>
@@ -719,8 +793,8 @@ export default function LandingEditorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (FR)</label>
-                    <input type="text" value={content.faq2Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.faq2Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                    <input id="input-faq2Question" type="text" value={content.faq2Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea id="input-faq2Answer" value={content.faq2Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (AR) العربية</label>
@@ -731,8 +805,8 @@ export default function LandingEditorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (FR)</label>
-                    <input type="text" value={content.faq3Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.faq3Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
+                    <input id="input-faq3Question" type="text" value={content.faq3Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
+                    <textarea id="input-faq3Answer" value={content.faq3Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (AR) العربية</label>

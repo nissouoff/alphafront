@@ -38,9 +38,13 @@ interface Product {
 interface Content {
   logo: string;
   brandName: string;
+  tagline: string;
   heroTitle: string;
   heroSubtitle: string;
   ctaButton: string;
+  ctaButtonAr: string;
+  collectionTitle: string;
+  reviewsTitle: string;
   contactEmail: string;
   contactWhatsapp: string;
   contactInstagram: string;
@@ -110,9 +114,13 @@ function CosmeticTemplate() {
   const [content, setContent] = useState<Content>({
     logo: '',
     brandName: 'Bella Skin',
+    tagline: 'Cosmétiques Naturels',
     heroTitle: 'Votre beauté commence ici',
     heroSubtitle: 'Découvrez notre collection exclusive de soins cosmétiques naturels, formulés pour révéler l\'éclat de votre peau.',
     ctaButton: 'Découvrir la collection',
+    ctaButtonAr: 'اكتشف المجموعة',
+    collectionTitle: 'Collection Exclusive',
+    reviewsTitle: 'Avis client',
     contactEmail: 'contact@bellaskin.com',
     contactWhatsapp: '',
     contactInstagram: '',
@@ -173,22 +181,30 @@ function CosmeticTemplate() {
     : '0';
 
   const isPreview = searchParams.get('preview') === 'true';
-  const isEditMode = searchParams.get('editMode') === 'true';
+  const isEditMode = searchParams.get('editMode') === 'true' || (typeof window !== 'undefined' && localStorage.getItem('isCosmeticEditMode') === 'true');
 
   const handleEditClick = (field: string) => {
-    if (isEditMode && window.parent !== window) {
-      window.parent.postMessage({ type: 'selectField', field }, '*');
+    if (isEditMode) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'selectField', field }, '*');
+      } else {
+        window.dispatchEvent(new CustomEvent('selectField', { detail: { field } }));
+      }
     }
   };
 
-  const editableStyle = isEditMode ? "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:ring-offset-2 rounded transition-all" : "";
+  const editableStyle = isEditMode ? "cursor-pointer ring-2 ring-purple-400 ring-offset-2 rounded transition-all" : "";
 
   const previewContent: Content = {
     logo: '',
     brandName: 'Cosméto Nature',
+    tagline: 'Cosmétiques Naturels',
     heroTitle: 'Votre Beauté Naturelle',
     heroSubtitle: 'Des produits naturels pour une peau radieuse',
     ctaButton: 'Commander Maintenant',
+    ctaButtonAr: 'اطلب الآن',
+    collectionTitle: 'Collection Exclusive',
+    reviewsTitle: 'Avis client',
     contactEmail: 'contact@cosmetonature.com',
     contactWhatsapp: '',
     contactInstagram: '',
@@ -242,15 +258,12 @@ function CosmeticTemplate() {
   };
 
   useEffect(() => {
-    if (isPreview) {
-      setContent(previewContent);
-      setProducts([previewData.product]);
-      setSelectedPhotoIndex(0);
-      setLoading(false);
+    if (isPreview || isEditMode) {
+      loadData();
     } else {
       loadData();
     }
-  }, []);
+  }, [isPreview, isEditMode]);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -288,7 +301,7 @@ function CosmeticTemplate() {
       try {
         console.log('Loading landing with ID:', landingId);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-        let url = `${API_URL}/public/landing/${landingId}`;
+        let url = `${API_URL}/public/landing/${landingId}?preview=true`;
         if (isPreview) {
           url = `${API_URL}/preview/${landingId}`;
         }
@@ -316,9 +329,9 @@ function CosmeticTemplate() {
             setLandingSlug(landing.slug);
           }
           if (result.landing?.content) {
-            setContent(result.landing.content);
+            setContent({ ...previewContent, ...result.landing.content, tagline: result.landing.content.tagline || 'Cosmétiques Naturels', ctaButton: result.landing.content.ctaButton || 'Commander Maintenant', collectionTitle: result.landing.content.collectionTitle || 'Collection Exclusive', reviewsTitle: result.landing.content.reviewsTitle || 'Avis Client' });
           } else if (landing.content) {
-            setContent(landing.content);
+            setContent({ ...previewContent, ...landing.content, tagline: landing.content.tagline || 'Cosmétiques Naturels', ctaButton: landing.content.ctaButton || 'Commander Maintenant', collectionTitle: landing.content.collectionTitle || 'Collection Exclusive', reviewsTitle: landing.content.reviewsTitle || 'Avis Client' });
           }
           if (result.landing?.products && result.landing.products.length > 0) {
             setProducts(result.landing.products);
@@ -438,7 +451,7 @@ function CosmeticTemplate() {
   const product = products[0];
 
   return (
-    <div className={`min-h-screen bg-white font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-white font-sans smooth-scroll ${lang === 'ar' ? 'rtl' : 'ltr'}`}>
       {/* Header */}
       {content.showHeaderNav !== false && (
         <header className="bg-white border-b border-zinc-100 sticky top-0 z-50 shadow-sm">
@@ -454,13 +467,12 @@ function CosmeticTemplate() {
                 )}
                 <div>
                   <span onClick={() => handleEditClick('brandName')} className={`text-2xl font-bold bg-gradient-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent ${editableStyle}`}>{content.brandName}</span>
-                  <p className="text-xs text-zinc-500 tracking-widest uppercase">Cosmétiques Naturels</p>
+                  <p onClick={() => handleEditClick('tagline')} className={`text-xs text-zinc-500 tracking-widest uppercase ${editableStyle}`}>{content.tagline}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-4">
                 <nav className="hidden lg:flex items-center gap-8">
-                  <a href="#collection" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Collection</a>
                   <a href="#avis" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Avis</a>
                   <a href="#contact" className="text-sm font-medium text-zinc-600 hover:text-rose-500 transition-colors">Contact</a>
                 </nav>
@@ -493,7 +505,7 @@ function CosmeticTemplate() {
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur rounded-full shadow-sm border border-rose-100">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  <span className="text-sm font-medium text-zinc-700">Nouveau • Collection Printemps 2026</span>
+                  <span onClick={() => handleEditClick('collectionBadge')} className={`text-sm font-medium text-zinc-700 ${editableStyle}`}>Nouveau • {lang === 'ar' ? 'مجموعة ربيع 2026' : 'Collection Printemps 2026'}</span>
                 </div>
                 
                 {/* Sale Badge */}
@@ -508,23 +520,23 @@ function CosmeticTemplate() {
                 
                 {/* Title */}
                 <h1 onClick={() => handleEditClick('heroTitle')} className={`${content.heroTextSize || 'text-4xl md:text-6xl'} font-bold ${content.heroTextColor || 'text-zinc-900'} leading-tight ${editableStyle}`}>
-                  {content.heroTitle}
+                  {lang === 'ar' ? 'جمالك يبدأ من هنا' : content.heroTitle}
                 </h1>
                 
                 {/* Subtitle */}
                 <p onClick={() => handleEditClick('heroSubtitle')} className={`text-lg md:text-xl text-zinc-600 leading-relaxed max-w-lg ${editableStyle}`}>
-                  {content.heroSubtitle}
+                  {lang === 'ar' ? 'اكتشفي مجموعتنا الحصرية من مستحضرات التجميل الطبيعية' : content.heroSubtitle}
                 </p>
                 
                 {/* CTA Buttons */}
                 {content.showCTA !== false && (
                   <div className="flex flex-wrap gap-4">
-                    <a 
+<a 
                       href="#collection" 
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                      onClick={(e) => { e.preventDefault(); if (!isEditMode) window.location.href = '#collection'; }}
+                      className={`inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 ${editableStyle}`}
+                      onClick={(e) => { e.preventDefault(); if (isEditMode) { e.stopPropagation(); handleEditClick('ctaButton'); } else { window.location.href = '#collection'; } }}
                     >
-                      {t.discoverCollection}
+                    {content.ctaButton}
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
@@ -542,13 +554,13 @@ function CosmeticTemplate() {
                 {content.showStats !== false && (
                   <div className="flex items-center gap-8 pt-8 border-t border-zinc-200/50 flex-wrap">
                     <div className="text-center">
-                      <p onClick={() => handleEditClick('satisfactionRate')} className={`text-3xl font-bold text-rose-500 ${editableStyle}`}>{satisfactionRate}%</p>
-                      <p onClick={() => handleEditClick('clientsCount')} className={`text-xs text-zinc-500 uppercase tracking-wider ${editableStyle}`}>Satisfait</p>
+                      <p className="text-3xl font-bold text-rose-500">{satisfactionRate}%</p>
+                      <p className="text-xs text-zinc-500 uppercase tracking-wider">Satisfait</p>
                     </div>
                     <div className="w-px h-12 bg-zinc-200"></div>
                     <div className="text-center">
-                      <p onClick={() => handleEditClick('clientsCount')} className={`text-3xl font-bold text-rose-500 ${editableStyle}`}>{clientsCount}</p>
-                      <p onClick={() => handleEditClick('clientsCount')} className={`text-xs text-zinc-500 uppercase tracking-wider ${editableStyle}`}>Clients</p>
+                      <p className="text-3xl font-bold text-rose-500">{clientsCount}</p>
+                      <p className="text-xs text-zinc-500 uppercase tracking-wider">Clients</p>
                     </div>
                     {content.showTrustBar !== false && content.trustBarText && (
                       <>
@@ -565,42 +577,42 @@ function CosmeticTemplate() {
                 )}
               </div>
               
-              {/* Hero Image */}
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-br from-rose-300/30 to-orange-300/30 rounded-[3rem] blur-2xl"></div>
+                {/* Hero Image */}
                 <div className="relative">
-                  {product && product.photos && product.photos.length > 0 ? (
-                    <div className="bg-white rounded-[2rem] p-6 shadow-2xl border border-zinc-100">
-                      <img 
-                        src={product.photos[selectedPhotoIndex] || product.photos[0]} 
-                        alt={product.name} 
-                        className="w-full rounded-2xl" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="bg-gradient-to-br from-rose-100 to-orange-100 rounded-[2rem] p-8 md:p-16 shadow-2xl flex flex-col items-center justify-center aspect-square">
-                      <span className="text-7xl md:text-[12rem]">🌸</span>
-                      <p className="text-zinc-500 mt-4">Photo du produit principal</p>
-                    </div>
-                  )}
-                  
-                  {/* Floating Card */}
-                  {product && (
-                    <div className="absolute left-2 md:-left-4 bottom-8 md:bottom-12 bg-white rounded-2xl p-4 md:p-5 shadow-2xl border border-zinc-100 max-w-[160px] md:max-w-[200px]">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <span className="text-xs font-medium text-green-600">Best-seller</span>
+                  <div className="absolute -inset-4 bg-gradient-to-br from-rose-300/30 to-orange-300/30 rounded-[3rem] blur-2xl animate-float"></div>
+                  <div className="relative animate-slide-up">
+                    {product && product.photos && product.photos.length > 0 ? (
+                      <div className="bg-white rounded-[2rem] p-6 shadow-2xl border border-zinc-100 hover-lift">
+                        <img 
+                          src={product.photos[selectedPhotoIndex] || product.photos[0]} 
+                          alt={product.name} 
+                          className="w-full rounded-2xl" 
+                        />
                       </div>
-                      <p className="font-bold text-xl text-zinc-900">{product.price} DA</p>
-                      <p className="text-xs text-zinc-500">{product.name}</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="bg-gradient-to-br from-rose-100 to-orange-100 rounded-[2rem] p-8 md:p-16 shadow-2xl flex flex-col items-center justify-center aspect-square">
+                        <span className="text-7xl md:text-[12rem]">🌸</span>
+                        <p className="text-zinc-500 mt-4">Photo du produit principal</p>
+                      </div>
+                    )}
+                    
+                    {/* Floating Card */}
+                    {product && (
+                      <div className="absolute left-2 md:-left-4 bottom-8 md:bottom-12 bg-white rounded-2xl p-4 md:p-5 shadow-2xl border border-zinc-100 max-w-[160px] md:max-w-[200px] animate-slide-up">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <span className="text-xs font-medium text-green-600">Best-seller</span>
+                        </div>
+                        <p className="font-bold text-xl text-zinc-900">{product.price} DA</p>
+                        <p className="text-xs text-zinc-500">{product.name}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </section>
@@ -613,7 +625,7 @@ function CosmeticTemplate() {
             {/* Section Header */}
             <div className="text-center mb-12 md:mb-16">
               <span className="inline-block px-4 py-1.5 bg-rose-100 text-rose-700 text-sm font-semibold rounded-full mb-4">Notre Sélection</span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 mb-4">Collection Exclusive</h2>
+              <h2 onClick={() => handleEditClick('collectionTitle')} className={`text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 mb-4 ${editableStyle}`}>{content.collectionTitle}</h2>
               <p className="text-base md:text-lg text-zinc-600 max-w-2xl mx-auto">Des soins cosmétiques de haute qualité, formulés avec des ingrédients naturels soigneusement sélectionnés.</p>
             </div>
             
@@ -697,13 +709,13 @@ function CosmeticTemplate() {
                 {/* CTA */}
                 {content.showCTA !== false && (
                   <button 
-                    onClick={() => handleOrder(product)}
-                    className="w-full py-5 bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all text-lg flex items-center justify-center gap-3"
+                    onClick={(e) => { if (isEditMode) { e.stopPropagation(); handleEditClick('ctaButton'); } else { handleOrder(product); } }}
+                    className={`w-full py-5 bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all text-lg flex items-center justify-center gap-3 ${editableStyle}`}
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    {t.discoverCollection}
+                    {content.ctaButton}
                   </button>
                 )}
 
@@ -816,7 +828,7 @@ function CosmeticTemplate() {
           {/* Reviews List */}
           <div className="text-center mb-8 md:mb-12">
             <span className="inline-block px-4 py-1.5 bg-yellow-100 text-yellow-700 text-sm font-semibold rounded-full mb-4">Témoignages</span>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-900 mb-4">Ce que disent nos clientes</h2>
+            <h2 onClick={() => handleEditClick('reviewsTitle')} className={`text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-900 mb-4 ${editableStyle}`}>{content.reviewsTitle}</h2>
             {reviews.length > 0 ? (
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <div className="flex text-yellow-400 text-xl md:text-2xl">★★★★★</div>
@@ -923,7 +935,6 @@ function CosmeticTemplate() {
               <div>
                 <h4 className="font-bold mb-4">Navigation</h4>
                 <ul className="space-y-2 text-zinc-400">
-                  <li><a href="#collection" className="hover:text-white transition-colors">Collection</a></li>
                   <li><a href="#avis" className="hover:text-white transition-colors">Avis</a></li>
                   <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
                 </ul>
@@ -984,9 +995,30 @@ function CosmeticTemplate() {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
-        .animate-marquee {
-          animation: marquee 20s linear infinite;
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
         }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes pulse-soft {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
+        }
+        .animate-marquee { animation: marquee 20s linear infinite; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+        .smooth-scroll { scroll-behavior: smooth; }
       `}</style>
     </div>
   );

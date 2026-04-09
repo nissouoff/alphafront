@@ -78,6 +78,7 @@ const translations = {
 };
 
 interface OrderData {
+  productId: string;
   name: string;
   price: string;
   photo: string;
@@ -92,6 +93,7 @@ export default function VibeOrderPage() {
   const [landingSlug, setLandingSlug] = useState("");
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [lang, setLang] = useState<Language>('fr');
+  const [outOfStock, setOutOfStock] = useState(false);
   
   const t = translations[lang];
   
@@ -132,6 +134,31 @@ export default function VibeOrderPage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const checkStock = async () => {
+      const slug = orderData?.landingId || landingSlug;
+      if (!slug || slug === 'preview') return;
+      
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+        const response = await fetch(`${API_URL}/landing/${slug}/stock`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.stockStatus && data.stockStatus.length > 0) {
+            const product = data.stockStatus[0];
+            if (!product.unlimitedStock && !product.available) {
+              setOutOfStock(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking stock:', err);
+      }
+    };
+    
+    checkStock();
+  }, [orderData, landingSlug]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -162,6 +189,7 @@ export default function VibeOrderPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          productId: orderData?.productId || 'default',
           productName: orderData?.name || '',
           productPrice: orderData?.price || '',
           productPhoto: orderData?.photo || '',
@@ -243,31 +271,49 @@ export default function VibeOrderPage() {
 
       <div className="max-w-lg mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-2">{t.finalizeOrder}</h1>
-        <p className="text-gray-400 mb-8">{t.fillInfo}</p>
-
-        <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 mb-6">
-          {orderData?.photo && (
-            <div className="aspect-square bg-gray-800">
-              <img 
-                src={orderData.photo} 
-                alt={orderData?.name || 'Produit'}
-                className="w-full h-full object-cover"
-              />
+        
+        {outOfStock && (
+          <div className="bg-red-500/20 border border-red-500/50 rounded-2xl p-6 text-center mb-6">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
             </div>
-          )}
-          <div className="p-6">
-            <h2 className="text-xl font-bold mb-2">{orderData?.name || 'Produit'}</h2>
-            {orderData?.description && (
-              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{orderData.description}</p>
-            )}
-            <div className="flex justify-between items-center pt-4 border-t border-gray-700">
-              <span className="text-gray-400">{t.price}</span>
-              <span className="text-2xl font-bold text-orange-500">{orderData?.price || '0'} DA</span>
-            </div>
+            <h2 className="text-xl font-bold text-red-400 mb-2">Rupture de stock</h2>
+            <p className="text-gray-400 mb-4">Désolé, ce produit est actuellement en rupture de stock.</p>
+            <Link href={`/template/vibe?id=${landingSlug}`} className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+              Retour au produit
+            </Link>
           </div>
-        </div>
+        )}
+        
+        {!outOfStock && (
+          <>
+            <p className="text-gray-400 mb-8">{t.fillInfo}</p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 mb-6">
+              {orderData?.photo && (
+                <div className="aspect-square bg-gray-800">
+                  <img 
+                    src={orderData.photo} 
+                    alt={orderData?.name || 'Produit'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="p-6">
+                <h2 className="text-xl font-bold mb-2">{orderData?.name || 'Produit'}</h2>
+                {orderData?.description && (
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{orderData.description}</p>
+                )}
+                <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+                  <span className="text-gray-400">{t.price}</span>
+                  <span className="text-2xl font-bold text-orange-500">{orderData?.price || '0'} DA</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-2">{t.firstName} *</label>
@@ -417,6 +463,8 @@ export default function VibeOrderPage() {
             {t.fastDelivery}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

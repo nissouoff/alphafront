@@ -37,6 +37,9 @@ export default function CosmeticEditor() {
 
   const [content, setContent] = useState<Record<string, any>>({
     brandName: "Bella Skin",
+    tagline: "Cosmétiques Naturels",
+    collectionTitle: "Collection Exclusive",
+    reviewsTitle: "Avis client",
     logo: "",
     heroTitle: "Votre beauté commence ici",
     heroSubtitle: "Découvrez notre collection exclusive de soins cosmétiques naturels, formulés pour révéler l'éclat de votre peau.",
@@ -81,6 +84,7 @@ export default function CosmeticEditor() {
     if (!loading && !user) {
       router.push("/");
     } else if (!loading && user) {
+      localStorage.setItem('isCosmeticEditMode', 'true');
       if (landingId) {
         loadLanding();
       } else {
@@ -88,7 +92,48 @@ export default function CosmeticEditor() {
         setLoadingLanding(false);
       }
     }
+    return () => {
+      localStorage.removeItem('isCosmeticEditMode');
+    };
   }, [loading, user, landingId]);
+
+  useEffect(() => {
+    const handleSelectField = (event: any) => {
+      const field = event.data?.field || event.detail?.field;
+      if (!field) return;
+      
+      const fieldMap: Record<string, string> = {
+        brandName: 'brandName',
+        tagline: 'tagline',
+        collectionTitle: 'collectionTitle',
+        reviewsTitle: 'reviewsTitle',
+        heroTitle: 'heroTitle',
+        heroSubtitle: 'heroSubtitle',
+        ctaButton: 'ctaButton',
+        contactEmail: 'contactEmail',
+        footerText: 'footerText',
+      };
+      
+      const inputId = fieldMap[field];
+      if (inputId) {
+        const input = document.getElementById(`input-${inputId}`);
+        if (input) {
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          input.focus();
+        }
+      }
+    };
+
+    window.addEventListener('selectField', handleSelectField);
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'selectField') {
+        handleSelectField(event);
+      }
+    });
+    return () => {
+      window.removeEventListener('selectField', handleSelectField);
+    };
+  }, []);
 
   const loadLanding = async () => {
     if (!landingId) return;
@@ -231,7 +276,7 @@ export default function CosmeticEditor() {
 
   const handlePreview = () => {
     if (landingId) {
-      window.open(`/template/cosmetic?id=${landingId}`, '_blank');
+      window.open(`/template/cosmetic?id=${landingId}&editMode=true`, '_blank');
     } else {
       const tempData = {
         content,
@@ -241,7 +286,7 @@ export default function CosmeticEditor() {
         }))
       };
       const encoded = btoa(encodeURIComponent(JSON.stringify(tempData)));
-      window.open(`/template/cosmetic?data=${encoded}`, '_blank');
+      window.open(`/template/cosmetic?data=${encoded}&editMode=true`, '_blank');
     }
   };
 
@@ -364,7 +409,7 @@ export default function CosmeticEditor() {
                         <span className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-orange-500 bg-clip-text text-transparent">
                           {content.brandName}
                         </span>
-                        <span className="text-xs text-zinc-500 tracking-widest uppercase">Cosmétiques Naturels</span>
+                        <span className="text-xs text-zinc-500 tracking-widest uppercase">{content.tagline || 'Cosmétiques Naturels'}</span>
                       </div>
                     </div>
                     
@@ -677,9 +722,20 @@ export default function CosmeticEditor() {
                 <div>
                   <label className="text-xs text-zinc-500 mb-1 block">Nom de la marque</label>
                   <input
+                    id="input-brandName"
                     type="text"
                     value={content.brandName}
                     onChange={(e) => setContent({...content, brandName: e.target.value})}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:border-rose-500 focus:outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 mb-1 block">Slogan (sous le nom)</label>
+                  <input
+                    id="input-tagline"
+                    type="text"
+                    value={content.tagline || ''}
+                    onChange={(e) => setContent({...content, tagline: e.target.value})}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:border-rose-500 focus:outline-none text-sm"
                   />
                 </div>
@@ -704,9 +760,30 @@ export default function CosmeticEditor() {
                 <div>
                   <label className="text-xs text-zinc-500 mb-1 block">Bouton CTA</label>
                   <input
+                    id="input-ctaButton"
                     type="text"
                     value={content.ctaButton}
                     onChange={(e) => setContent({...content, ctaButton: e.target.value})}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:border-rose-500 focus:outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 mb-1 block">Titre Collection</label>
+                  <input
+                    id="input-collectionTitle"
+                    type="text"
+                    value={content.collectionTitle}
+                    onChange={(e) => setContent({...content, collectionTitle: e.target.value})}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:border-rose-500 focus:outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-zinc-500 mb-1 block">Titre Avis</label>
+                  <input
+                    id="input-reviewsTitle"
+                    type="text"
+                    value={content.reviewsTitle}
+                    onChange={(e) => setContent({...content, reviewsTitle: e.target.value})}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:border-rose-500 focus:outline-none text-sm"
                   />
                 </div>
