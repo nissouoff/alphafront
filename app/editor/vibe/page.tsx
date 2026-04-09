@@ -12,6 +12,7 @@ interface VibeContent {
   heroTitle: string;
   heroSubtitle: string;
   ctaButton: string;
+  ctaButtonAr?: string;
   feature1Title: string;
   feature1Desc: string;
   feature2Title: string;
@@ -47,6 +48,7 @@ const DEFAULT_CONTENT: VibeContent = {
   heroTitle: 'Boost ton quotidien avec un produit unique 🚀',
   heroSubtitle: 'Une solution moderne, rapide et efficace conçue pour des résultats visibles immédiatement.',
   ctaButton: 'Acheter maintenant',
+  ctaButtonAr: 'اشتري الآن',
   feature1Title: 'Rapide',
   feature1Desc: 'Résultats visibles immédiatement',
   feature2Title: 'Simple',

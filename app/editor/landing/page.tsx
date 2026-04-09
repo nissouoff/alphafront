@@ -81,6 +81,27 @@ interface LandingContent {
   ctaFinalTitleAr?: string;
   ctaFinalSubtitle?: string;
   ctaFinalSubtitleAr?: string;
+  collectionBadge?: string;
+  collectionBadgeAr?: string;
+  collectionTitle?: string;
+  collectionTitleAr?: string;
+  collectionDescription?: string;
+  collectionDescriptionAr?: string;
+  fastDeliveryText?: string;
+  fastDeliveryTextAr?: string;
+  cashOnDeliveryText?: string;
+  cashOnDeliveryTextAr?: string;
+  questionText?: string;
+  questionTextAr?: string;
+  helpText?: string;
+  helpTextAr?: string;
+  supportText?: string;
+  supportTextAr?: string;
+  supportGuarantee?: string;
+  supportGuaranteeAr?: string;
+  paymentText?: string;
+  exploreButton?: string;
+  exploreButtonAr?: string;
 }
 
 const DEFAULT_CONTENT: LandingContent = {
