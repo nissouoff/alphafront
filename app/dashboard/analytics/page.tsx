@@ -3,7 +3,7 @@
 import { useTheme } from "@/context/ThemeContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState, useEffect } from "react";
-import { getLandings } from "@/lib/api";
+import { getLandings, getOrders } from "@/lib/api";
 
 type TimeFilter = 'today' | 'week' | 'month' | 'all';
 
@@ -19,11 +19,12 @@ export default function AnalyticsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const result = await getLandings("all");
-        setLandings(result.landings || []);
-        if (result.orders) {
-          setOrders(result.orders);
-        }
+        const [landingsResult, ordersResult] = await Promise.all([
+          getLandings("all"),
+          getOrders()
+        ]);
+        setLandings(landingsResult.landings || []);
+        setOrders(ordersResult.orders || []);
       } catch (e) {
         console.error(e);
       }
