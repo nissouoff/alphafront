@@ -191,7 +191,7 @@ export default function OrderPage() {
 
     setSubmitting(true);
     
-    const orderLandingId = product?.landingSlug || orderData?.landingId;
+    const orderLandingId = orderData?.landingId || product?.landingSlug;
     
     if (!orderLandingId) {
       alert('Erreur: ID du produit manquant');

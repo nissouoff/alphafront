@@ -103,12 +103,15 @@ export default function OrderConfirmationPage() {
   }, [landingSlug]);
 
   useEffect(() => {
-    if (confirmationData) {
+    if (confirmationData && confirmationData.landingId) {
       setProduct({
         name: confirmationData.name,
         price: confirmationData.price,
         landingSlug: confirmationData.landingId,
       });
+      if (landingSlug !== confirmationData.landingId) {
+        setLandingSlug(confirmationData.landingId);
+      }
     }
   }, [confirmationData]);
 

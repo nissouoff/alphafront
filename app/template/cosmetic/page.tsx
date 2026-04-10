@@ -285,6 +285,22 @@ function CosmeticTemplate() {
     const dataParam = searchParams.get('data');
     const isPreview = searchParams.get('preview') === 'true';
 
+    // If no ID and no data, use default preview content
+    if (!landingId && !dataParam) {
+      setContent(previewContent);
+      setProducts([{
+        id: 'preview-product',
+        name: 'Sérum Éclat Premium',
+        price: '2990',
+        description: 'Un sérum visage efficace pour une peau radieuse.',
+        biography: '',
+        photos: [],
+        mainPhoto: 0,
+      }]);
+      setLoading(false);
+      return;
+    }
+
     if (dataParam) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(dataParam)));
@@ -366,10 +382,10 @@ function CosmeticTemplate() {
       price: product.price,
       photo: product.photos && product.photos.length > 0 ? product.photos[0] : '',
       description: product.description || '',
-      landingId: landingSlug || landingId,
+      landingId: landingId,
     };
     sessionStorage.setItem('orderData', JSON.stringify(orderData));
-    window.location.href = `/template/cosmetic/order?lang=${lang}&id=${landingSlug || landingId}`;
+    window.location.href = `/template/cosmetic/order?lang=${lang}&id=${landingId}`;
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {

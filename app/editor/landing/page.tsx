@@ -688,185 +688,6 @@ export default function LandingEditorPage() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Options d&apos;affichage</h2>
-              <div className="space-y-4">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={content.showStats !== false} onChange={(e) => setContent(prev => ({ ...prev, showStats: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
-                  <div>
-                    <span className="text-white font-medium">Afficher les statistiques</span>
-                    <p className="text-xs text-zinc-500 mt-1">Basé sur les avis clients et commandes</p>
-                  </div>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={content.showReviews !== false} onChange={(e) => setContent(prev => ({ ...prev, showReviews: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
-                  <span className="text-white font-medium">Afficher les commentaires clients</span>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={content.showGuarantee || false} onChange={(e) => setContent(prev => ({ ...prev, showGuarantee: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5" />
-                  <span className="text-white font-medium">Afficher la garantie</span>
-                </label>
-                {content.showGuarantee && (
-                  <div className="ml-8 mt-2 space-y-2">
-                    <input
-                      type="text"
-                      value={content.guaranteeText || ''}
-                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeText: e.target.value }))}
-                      placeholder="Texte garantie (FR)"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm"
-                    />
-                    <input
-                      type="text"
-                      value={content.guaranteeTextAr || ''}
-                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeTextAr: e.target.value }))}
-                      placeholder="Texte garantie (AR) العربية"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Section Avantages */}
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Avantages (FR / AR)</h2>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 1 (FR)</label>
-                    <input type="text" value={content.feature1Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.feature1Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 1 (AR) العربية</label>
-                    <input type="text" value={content.feature1TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.feature1DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature1DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 2 (FR)</label>
-                    <input type="text" value={content.feature2Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.feature2Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 2 (AR) العربية</label>
-                    <input type="text" value={content.feature2TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.feature2DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature2DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 3 (FR)</label>
-                    <input type="text" value={content.feature3Title || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3Title: e.target.value }))} placeholder="Titre" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea value={content.feature3Desc || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3Desc: e.target.value }))} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-orange-400 mb-2">Avantage 3 (AR) العربية</label>
-                    <input type="text" value={content.feature3TitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3TitleAr: e.target.value }))} placeholder="العنوان" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.feature3DescAr || ''} onChange={(e) => setContent(prev => ({ ...prev, feature3DescAr: e.target.value }))} placeholder="الوصف" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Bar */}
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Trust Bar (FR / AR)</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Trust Bar (FR)</label>
-                  <input type="text" value={content.trustBarText || ''} onChange={(e) => setContent(prev => ({ ...prev, trustBarText: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Trust Bar (AR) العربية</label>
-                  <input type="text" value={content.trustBarTextAr || ''} onChange={(e) => setContent(prev => ({ ...prev, trustBarTextAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
-                </div>
-              </div>
-            </div>
-
-            {/* FAQ */}
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">FAQ (FR / AR)</h2>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (FR)</label>
-                    <input id="input-faq1Question" type="text" value={content.faq1Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea id="input-faq1Answer" value={content.faq1Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 1 (AR) العربية</label>
-                    <input type="text" value={content.faq1QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.faq1AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq1AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (FR)</label>
-                    <input id="input-faq2Question" type="text" value={content.faq2Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea id="input-faq2Answer" value={content.faq2Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 2 (AR) العربية</label>
-                    <input type="text" value={content.faq2QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.faq2AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq2AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-zinc-900/50 rounded-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (FR)</label>
-                    <input id="input-faq3Question" type="text" value={content.faq3Question || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Question: e.target.value }))} placeholder="Question" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2" />
-                    <textarea id="input-faq3Answer" value={content.faq3Answer || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3Answer: e.target.value }))} placeholder="Réponse" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-purple-400 mb-2">FAQ 3 (AR) العربية</label>
-                    <input type="text" value={content.faq3QuestionAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3QuestionAr: e.target.value }))} placeholder="السؤال" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm mb-2 text-right" dir="rtl" />
-                    <textarea value={content.faq3AnswerAr || ''} onChange={(e) => setContent(prev => ({ ...prev, faq3AnswerAr: e.target.value }))} placeholder="الإجابة" rows={2} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm resize-none text-right" dir="rtl" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Footer (FR / AR)</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Footer (FR)</label>
-                  <input type="text" value={content.footerText} onChange={(e) => setContent(prev => ({ ...prev, footerText: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Texte Footer (AR) العربية</label>
-                  <input type="text" value={content.footerTextAr || ''} onChange={(e) => setContent(prev => ({ ...prev, footerTextAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
-                </div>
-              </div>
-            </div>
-
-            {/* CTA Final Section (Skinova) */}
-            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">CTA Final (FR / AR)</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Titre CTA Final (FR)</label>
-                  <input type="text" value={content.ctaFinalTitle || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalTitle: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Titre CTA Final (AR) العربية</label>
-                  <input type="text" value={content.ctaFinalTitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalTitleAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre CTA Final (FR)</label>
-                  <input type="text" value={content.ctaFinalSubtitle || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalSubtitle: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Sous-titre CTA Final (AR) العربية</label>
-                  <input type="text" value={content.ctaFinalSubtitleAr || ''} onChange={(e) => setContent(prev => ({ ...prev, ctaFinalSubtitleAr: e.target.value }))} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-purple-500 focus:outline-none text-sm text-right" dir="rtl" />
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -912,6 +733,65 @@ export default function LandingEditorPage() {
                   <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
                   <textarea value={product.description} onChange={(e) => setProduct(prev => ({ ...prev, description: e.target.value }))} rows={3} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base" />
                 </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Stock</h2>
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={product.unlimitedStock || false} onChange={(e) => setProduct(prev => ({ ...prev, unlimitedStock: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5" />
+                  <div>
+                    <span className="text-white font-medium">Stock illimité</span>
+                    <p className="text-xs text-zinc-500 mt-1">Cochez si le produit est disponible sans limite</p>
+                  </div>
+                </label>
+                {!product.unlimitedStock && (
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">Quantité en stock</label>
+                    <input type="number" value={product.stock || 0} onChange={(e) => setProduct(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:border-purple-500 focus:outline-none text-sm sm:text-base" min="0" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-zinc-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-zinc-700">
+              <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Options d&apos;affichage</h2>
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showStats !== false} onChange={(e) => setContent(prev => ({ ...prev, showStats: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
+                  <div>
+                    <span className="text-white font-medium">Afficher les statistiques</span>
+                    <p className="text-xs text-zinc-500 mt-1">Basé sur les avis clients et commandes</p>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showReviews !== false} onChange={(e) => setContent(prev => ({ ...prev, showReviews: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-rose-500 focus:ring-rose-500 mt-0.5" />
+                  <span className="text-white font-medium">Afficher les commentaires clients</span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={content.showGuarantee || false} onChange={(e) => setContent(prev => ({ ...prev, showGuarantee: e.target.checked }))} className="w-5 h-5 rounded border-zinc-600 bg-zinc-900 text-green-500 focus:ring-green-500 mt-0.5" />
+                  <span className="text-white font-medium">Afficher la garantie</span>
+                </label>
+                {content.showGuarantee && (
+                  <div className="ml-8 mt-2 space-y-2">
+                    <input
+                      type="text"
+                      value={content.guaranteeText || ''}
+                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeText: e.target.value }))}
+                      placeholder="Texte garantie (FR)"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={content.guaranteeTextAr || ''}
+                      onChange={(e) => setContent(prev => ({ ...prev, guaranteeTextAr: e.target.value }))}
+                      placeholder="Texte garantie (AR) العربية"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

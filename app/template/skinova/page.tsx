@@ -283,6 +283,22 @@ function SkinovaTemplate() {
     const landingId = searchParams.get('id');
     const dataParam = searchParams.get('data');
 
+    // If no ID and no data, use default preview content
+    if (!landingId && !dataParam) {
+      setContent(previewContent);
+      setProducts([{
+        id: 'preview-product',
+        name: 'Skinova Premium',
+        price: '3990',
+        description: 'Des formulations révolutionnaires pour une peau transformée.',
+        biography: '',
+        photos: [],
+        mainPhoto: 0,
+      }]);
+      setLoading(false);
+      return;
+    }
+
     if (dataParam) {
       try {
         const decoded = JSON.parse(decodeURIComponent(atob(dataParam)));

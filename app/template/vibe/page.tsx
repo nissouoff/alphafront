@@ -258,8 +258,24 @@ function VibeTemplate() {
 
   const loadData = async () => {
     const landingId = searchParams.get('id');
+    
+    // If no ID, just use default content for preview
     if (!landingId) {
-      setError('ID manquant');
+      setContent(DEFAULT_CONTENT);
+      setProducts([{
+        id: 'preview-product',
+        name: 'Produit Premium',
+        price: '3500',
+        description: 'Une solution moderne et efficace.',
+        biography: '',
+        photos: [],
+        mainPhoto: 0,
+      }]);
+      setReviews([
+        { id: '1', name: 'Sophie L.', rating: 5, comment: 'Excellent produit!', createdAt: new Date().toISOString() },
+        { id: '2', name: 'Marie K.', rating: 5, comment: 'Très satisfait de mon achat.', createdAt: new Date().toISOString() },
+        { id: '3', name: 'Julie M.', rating: 4, comment: 'Bonne qualité, je recommande.', createdAt: new Date().toISOString() },
+      ]);
       setLoading(false);
       return;
     }
